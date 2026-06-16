@@ -91,7 +91,8 @@ function ServiceDetailCard({ service, onBook, hovered, onHover, onLeave }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ color: '#00C896', fontWeight: 700, fontSize: 20 }}>R{service.pricePerSqm}/m²</div>
-          <div style={{ color: '#4A5568', fontSize: 12, marginTop: 2 }}>base rate</div>
+          <div style={{ color: '#4A5568', fontSize: 12, marginTop: 2 }}>our rate</div>
+          <div style={{ color: '#FF5C3A', fontSize: 11, marginTop: 2, textDecoration: 'line-through' }}>market: {service.marketRate}</div>
         </div>
       </div>
 

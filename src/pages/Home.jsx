@@ -36,7 +36,7 @@ export default function Home() {
               background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.25)',
               borderRadius: '100px', padding: '8px 16px', marginBottom: 28
             }}>
-              <span style={{ color: '#00C896', fontSize: 13, fontWeight: 500 }}>🇿🇦 South Africa's #1 Cleaning Platform</span>
+              <span style={{ color: '#00C896', fontSize: 13, fontWeight: 500 }}>🇿🇦 Up to 60% Cheaper Than Market Rates — Guaranteed</span>
             </div>
 
             <h1 style={{
@@ -55,7 +55,7 @@ export default function Home() {
               fontSize: 18, color: '#7A8B9C', lineHeight: 1.7,
               marginBottom: 40, maxWidth: 520
             }}>
-              Book vetted cleaning professionals for your home, office, garden, or industrial space. Priced per square meter — transparent, fair, no surprises.
+              Book vetted cleaning professionals for your home, office, garden, or industrial space. Starting from just R5/m² — up to 60% cheaper than any competitor. Transparent pricing, no surprises.
             </p>
 
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
@@ -72,7 +72,7 @@ export default function Home() {
               {[
                 { value: '500+', label: 'Cleaners Nationwide' },
                 { value: '4.9★', label: 'Average Rating' },
-                { value: 'R8/m²', label: 'Starting Price' }
+                { value: 'R5/m²', label: 'Starting Price' }
               ].map(stat => (
                 <div key={stat.label}>
                   <div style={{ fontSize: 28, fontFamily: 'Syne', fontWeight: 800, color: '#00C896' }}>{stat.value}</div>
