@@ -156,3 +156,48 @@ CREATE TABLE IF NOT EXISTS cleaners (
 
 ALTER TABLE cleaners ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Cleaners are publicly viewable" ON cleaners FOR SELECT USING (true);
+
+
+-- ============================================================
+-- V3 ADDITIONS — CleanConnect Workers portal
+-- ============================================================
+
+-- Link cleaners to auth accounts so they can sign in to the Worker Portal
+ALTER TABLE cleaners ADD COLUMN IF NOT EXISTS user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE;
+
+-- Proper cleaner assignment on bookings (cleaner_assigned keeps the display name)
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cleaner_id UUID REFERENCES cleaners(id);
+CREATE INDEX IF NOT EXISTS idx_bookings_cleaner_id ON bookings(cleaner_id);
+
+-- Cleaners manage their own row
+CREATE POLICY "Users can register as cleaner"
+  ON cleaners FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Cleaners can update own row"
+  ON cleaners FOR UPDATE USING (auth.uid() = user_id);
+
+-- Cleaners can see and update the bookings assigned to them
+CREATE POLICY "Cleaners can view assigned bookings"
+  ON bookings FOR SELECT USING (
+    cleaner_id IN (SELECT id FROM cleaners WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Cleaners can update assigned bookings"
+  ON bookings FOR UPDATE USING (
+    cleaner_id IN (SELECT id FROM cleaners WHERE user_id = auth.uid())
+  );
+
+
+-- ============================================================
+-- V4 ADDITIONS — Live cleaner location tracking
+-- ============================================================
+
+ALTER TABLE cleaners ADD COLUMN IF NOT EXISTS current_lat DOUBLE PRECISION;
+ALTER TABLE cleaners ADD COLUMN IF NOT EXISTS current_lng DOUBLE PRECISION;
+ALTER TABLE cleaners ADD COLUMN IF NOT EXISTS location_updated_at TIMESTAMPTZ;
+
+-- Stream cleaner location updates to customers via Supabase Realtime
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE cleaners;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;

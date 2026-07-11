@@ -30,6 +30,7 @@ export default function Admin() {
   const [search, setSearch] = useState('')
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [sortBy, setSortBy] = useState('newest')
+  const [cleanersList, setCleanersList] = useState([])
 
   const handlePinSubmit = (e) => {
     e.preventDefault()
@@ -44,8 +45,18 @@ export default function Admin() {
         .from('bookings').select('*').order('created_at', { ascending: false })
       if (error || !data || data.length === 0) setBookings(DEMO_BOOKINGS)
       else setBookings(data)
+      const { data: cleanerRows } = await supabase.from('cleaners').select('id, name, available')
+      if (cleanerRows?.length) setCleanersList(cleanerRows)
     } catch { setBookings(DEMO_BOOKINGS) }
     finally { setLoading(false) }
+  }
+
+  // Registered workers from the DB; falls back to the demo name list
+  const cleanerOptions = cleanersList.length ? cleanersList : CLEANERS.map(name => ({ id: null, name }))
+
+  const assignCleaner = (bookingId, name) => {
+    const c = cleanerOptions.find(o => o.name === name)
+    updateBooking(bookingId, { cleaner_assigned: name || null, cleaner_id: c?.id ?? null })
   }
 
   const updateBooking = async (id, updates) => {
@@ -249,7 +260,8 @@ export default function Admin() {
                     booking={booking}
                     onSelect={() => setSelectedBooking(booking)}
                     onStatusChange={status => updateBooking(booking.id, { status })}
-                    onAssignCleaner={cleaner => updateBooking(booking.id, { cleaner_assigned: cleaner })}
+                    onAssignCleaner={name => assignCleaner(booking.id, name)}
+                    cleaners={cleanerOptions}
                   />
                 ))}
               </div>
@@ -274,7 +286,8 @@ export default function Admin() {
                     booking={booking}
                     onSelect={() => setSelectedBooking(booking)}
                     onStatusChange={status => updateBooking(booking.id, { status })}
-                    onAssignCleaner={cleaner => updateBooking(booking.id, { cleaner_assigned: cleaner })}
+                    onAssignCleaner={name => assignCleaner(booking.id, name)}
+                    cleaners={cleanerOptions}
                     highlight
                   />
                 ))}
@@ -293,7 +306,8 @@ export default function Admin() {
           booking={selectedBooking}
           onClose={() => setSelectedBooking(null)}
           onStatusChange={status => updateBooking(selectedBooking.id, { status })}
-          onAssignCleaner={cleaner => updateBooking(selectedBooking.id, { cleaner_assigned: cleaner })}
+          onAssignCleaner={name => assignCleaner(selectedBooking.id, name)}
+          cleaners={cleanerOptions}
         />
       )}
     </div>
@@ -391,7 +405,7 @@ function CustomerRow({ customer, onViewBooking }) {
 }
 
 // ── BOOKING ROW ───────────────────────────────────────────
-function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, highlight }) {
+function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleaners, highlight }) {
   const service = SERVICES.find(s => s.id === booking.service_id)
   const conf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
 
@@ -432,7 +446,7 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, highli
         <select value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} onClick={e => e.stopPropagation()}
           style={{ background: booking.cleaner_assigned ? '#1E2530' : 'rgba(255,92,58,0.08)', border: `1px solid ${booking.cleaner_assigned ? '#2E3A4E' : '#FF5C3A'}`, borderRadius: 8, padding: '7px 10px', color: booking.cleaner_assigned ? '#E8EDF4' : '#FF8C78', fontSize: 12, cursor: 'pointer' }}>
           <option value="">⚠️ Assign cleaner...</option>
-          {CLEANERS.map(c => <option key={c} value={c}>{c}</option>)}
+          {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
         </select>
 
         {/* Status */}
@@ -463,7 +477,7 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, highli
 }
 
 // ── BOOKING DETAIL MODAL ──────────────────────────────────
-function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner }) {
+function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, cleaners }) {
   const service = SERVICES.find(s => s.id === booking.service_id)
   const conf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
 
@@ -538,7 +552,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner }) {
           <label style={{ display: 'block', fontSize: 13, color: '#7A8B9C', marginBottom: 8, fontWeight: 500 }}>👤 Assign Cleaner</label>
           <select className="input-field" value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} style={{ cursor: 'pointer' }}>
             <option value="">Select a cleaner...</option>
-            {CLEANERS.map(c => <option key={c} value={c}>{c}</option>)}
+            {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
           </select>
           {booking.cleaner_assigned && (
             <div style={{ marginTop: 8, fontSize: 13, color: '#00C896' }}>✓ Assigned to {booking.cleaner_assigned}</div>

@@ -1,0 +1,155 @@
+import { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
+import { SERVICES, PROVINCES } from '../../data/services'
+
+const LANGUAGES = ['English', 'isiZulu', 'isiXhosa', 'Afrikaans', 'Sepedi', 'Setswana', 'Sesotho', 'Xitsonga', 'siSwati', 'Tshivenda', 'isiNdebele']
+
+export default function WorkerRegister() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [form, setForm] = useState({
+    name: user?.user_metadata?.full_name || '',
+    phone: user?.user_metadata?.phone || '',
+    location: '',
+    province: 'Gauteng',
+    bio: ''
+  })
+  const [specialties, setSpecialties] = useState([])
+  const [languages, setLanguages] = useState(['English'])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  // Already registered? Go straight to the dashboard.
+  useEffect(() => {
+    if (!user) return
+    supabase.from('cleaners').select('id').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (data) navigate('/worker', { replace: true }) })
+  }, [user, navigate])
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }))
+  const toggle = (list, setList, value) =>
+    setList(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    if (specialties.length === 0) return setError('Select at least one service you offer')
+    setLoading(true)
+    try {
+      const { error: insertError } = await supabase.from('cleaners').insert({
+        user_id: user.id,
+        name: form.name,
+        email: user.email || null,
+        phone: form.phone,
+        location: form.location,
+        province: form.province,
+        specialties,
+        languages,
+        bio: form.bio,
+        available: true
+      })
+      if (insertError) throw insertError
+      navigate('/worker')
+    } catch (err) {
+      setError(err.message || 'Could not complete registration. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ paddingTop: 68, minHeight: '100vh', background: '#0D1117' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px 80px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 16px' }}>🧹</div>
+          <h1 style={{ fontSize: 30, marginBottom: 8 }}>Become a CleanConnect Worker</h1>
+          <p style={{ color: '#7A8B9C' }}>Register once, get assigned jobs, earn on your schedule</p>
+        </div>
+
+        <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 20, padding: 36 }}>
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div style={{ background: 'rgba(255,92,58,0.1)', border: '1px solid rgba(255,92,58,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, color: '#FF5C3A', fontSize: 14 }}>⚠️ {error}</div>
+            )}
+
+            <Field label="Full name">
+              <input className="input-field" placeholder="Zanele Dlamini" value={form.name} onChange={set('name')} required />
+            </Field>
+            <Field label="Phone number">
+              <input className="input-field" type="tel" placeholder="072 123 4567" value={form.phone} onChange={set('phone')} required />
+            </Field>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <Field label="City / Area">
+                <input className="input-field" placeholder="Johannesburg" value={form.location} onChange={set('location')} required />
+              </Field>
+              <Field label="Province">
+                <select className="input-field" value={form.province} onChange={set('province')} style={{ cursor: 'pointer' }}>
+                  {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </Field>
+            </div>
+
+            <Field label="Services you offer">
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {SERVICES.map(s => (
+                  <Chip key={s.id} active={specialties.includes(s.name)} onClick={() => toggle(specialties, setSpecialties, s.name)}>
+                    {s.icon} {s.name}
+                  </Chip>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Languages">
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {LANGUAGES.map(l => (
+                  <Chip key={l} active={languages.includes(l)} onClick={() => toggle(languages, setLanguages, l)}>
+                    {l}
+                  </Chip>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Short bio (optional)">
+              <textarea className="input-field" rows={3} placeholder="Tell customers about your experience..."
+                value={form.bio} onChange={set('bio')} style={{ resize: 'vertical', fontFamily: 'inherit' }} />
+            </Field>
+
+            <button type="submit" className="btn-primary" disabled={loading}
+              style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16 }}>
+              {loading ? 'Registering...' : 'Register as a Worker →'}
+            </button>
+            <p style={{ fontSize: 12, color: '#4A5568', textAlign: 'center', marginTop: 12 }}>
+              Your profile will be reviewed and verified by the CleanConnect team.
+            </p>
+          </form>
+        </div>
+
+        <p style={{ textAlign: 'center', marginTop: 24, color: '#7A8B9C', fontSize: 15 }}>
+          Already registered? <Link to="/worker" style={{ color: '#00C896', fontWeight: 500 }}>Go to your jobs</Link>
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function Field({ label, children }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#7A8B9C', marginBottom: 8 }}>{label}</label>
+      {children}
+    </div>
+  )
+}
+
+function Chip({ active, onClick, children }) {
+  return (
+    <button type="button" onClick={onClick} style={{
+      padding: '8px 14px', borderRadius: 100, fontSize: 13, cursor: 'pointer',
+      border: `1.5px solid ${active ? '#00C896' : '#2E3A4E'}`,
+      background: active ? 'rgba(0,200,150,0.1)' : 'transparent',
+      color: active ? '#00C896' : '#7A8B9C', transition: 'all 0.2s'
+    }}>{children}</button>
+  )
+}

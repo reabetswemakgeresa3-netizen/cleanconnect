@@ -32,6 +32,7 @@ export default function Navbar() {
         <NavLink to="/cleaners" active={isActive('/cleaners')}>Our Cleaners</NavLink>
         {user && <NavLink to="/book" active={isActive('/book')}>Book Now</NavLink>}
         {user && <NavLink to="/dashboard" active={isActive('/dashboard')}>My Bookings</NavLink>}
+        <NavLink to="/worker" active={location.pathname.startsWith('/worker')}>Workers</NavLink>
       </div>
 
       {/* Auth */}

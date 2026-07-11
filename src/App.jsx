@@ -11,6 +11,8 @@ import Book from './pages/Book'
 import BookingSuccess from './pages/BookingSuccess'
 import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
+import WorkerDashboard from './pages/worker/WorkerDashboard'
+import WorkerRegister from './pages/worker/WorkerRegister'
 
 export default function App() {
   return (
@@ -26,6 +28,8 @@ export default function App() {
           <Route path="/book" element={<ProtectedRoute><Book /></ProtectedRoute>} />
           <Route path="/booking-success" element={<ProtectedRoute><BookingSuccess /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/worker" element={<ProtectedRoute><WorkerDashboard /></ProtectedRoute>} />
+          <Route path="/worker/register" element={<ProtectedRoute><WorkerRegister /></ProtectedRoute>} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
         <InstallPrompt />

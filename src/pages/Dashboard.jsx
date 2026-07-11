@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { SERVICES, STATUS_CONFIG, formatCurrency } from '../data/services'
+import LiveTrackingMap from '../components/LiveTrackingMap'
 
 const DEMO_BOOKINGS = [
   {
@@ -294,6 +295,16 @@ function BookingModal({ booking, onClose }) {
             </div>
           ))}
         </div>
+
+        {/* Live cleaner tracking */}
+        {booking.status === 'in-progress' && booking.cleaner_id && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 12, color: '#4A5568', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              📡 Track Your Cleaner
+            </div>
+            <LiveTrackingMap cleanerId={booking.cleaner_id} cleanerName={booking.cleaner_assigned} />
+          </div>
+        )}
 
         {/* Progress timeline */}
         <div style={{ marginBottom: 8 }}>
