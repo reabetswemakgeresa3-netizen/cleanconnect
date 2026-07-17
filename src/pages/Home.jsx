@@ -1,222 +1,162 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { SERVICES } from '../data/services'
 
-export default function Home() {
-  const { user } = useAuth()
+// Short Uber-tile labels for the service grid
+const TILE_LABELS = {
+  residential: 'Home Clean',
+  office: 'Office',
+  industrial: 'Industrial',
+  gardening: 'Garden',
+  medical: 'Medical',
+  carpet: 'Carpet',
+  postConstruction: 'Post-Construction',
+  event: 'Events'
+}
+const TILE_ORDER = ['residential', 'office', 'industrial', 'gardening', 'medical', 'carpet', 'postConstruction', 'event']
 
+// Drop a residential.webp / office.jpg etc. into public/images/services/
+// and the tile picks it up automatically; otherwise the emoji shows.
+const TILE_IMG_EXTS = ['webp', 'jpg', 'png']
+
+function TileArt({ id, emoji }) {
+  const [extIdx, setExtIdx] = useState(0)
+  if (extIdx >= TILE_IMG_EXTS.length) {
+    return <span style={{ position: 'absolute', top: 12, right: 14, fontSize: 30 }}>{emoji}</span>
+  }
   return (
-    <div style={{ paddingTop: 68 }}>
-      {/* Hero */}
-      <section style={{
-        minHeight: '92vh', display: 'flex', alignItems: 'center',
-        position: 'relative', overflow: 'hidden',
-        padding: '80px 24px 60px'
-      }}>
-        {/* Background grid */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(0,200,150,0.08) 0%, transparent 50%),
-                            radial-gradient(circle at 75% 75%, rgba(0,168,126,0.06) 0%, transparent 50%)`,
-          pointerEvents: 'none'
-        }} />
-        {/* Dot grid */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(rgba(46,58,78,0.6) 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-          pointerEvents: 'none', opacity: 0.5
-        }} />
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%', position: 'relative' }}>
-          <div style={{ maxWidth: 700 }}>
-            {/* Tag */}
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.25)',
-              borderRadius: '100px', padding: '8px 16px', marginBottom: 28
-            }}>
-              <span style={{ color: '#00C896', fontSize: 13, fontWeight: 500 }}>🇿🇦 Up to 60% Cheaper Than Market Rates — Guaranteed</span>
-            </div>
-
-            <h1 style={{
-              fontSize: 'clamp(42px, 6vw, 76px)', lineHeight: 1.1,
-              color: '#E8EDF4', marginBottom: 24, letterSpacing: '-1.5px'
-            }}>
-              Professional<br />
-              <span style={{
-                background: 'linear-gradient(90deg, #00C896, #00E5B0)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-              }}>Cleaning Services</span>
-              <br />at Your Door
-            </h1>
-
-            <p style={{
-              fontSize: 18, color: '#7A8B9C', lineHeight: 1.7,
-              marginBottom: 40, maxWidth: 520
-            }}>
-              Book vetted cleaning professionals for your home, office, garden, or industrial space. Starting from just R5/m² — up to 60% cheaper than any competitor. Transparent pricing, no surprises.
-            </p>
-
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <Link to={user ? '/book' : '/signup'} className="btn-primary" style={{ fontSize: 16, padding: '16px 32px' }}>
-                Book a Clean →
-              </Link>
-              <Link to="/services" className="btn-outline" style={{ fontSize: 16, padding: '16px 32px' }}>
-                View Services
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div style={{ display: 'flex', gap: 40, marginTop: 56, flexWrap: 'wrap' }}>
-              {[
-                { value: '500+', label: 'Cleaners Nationwide' },
-                { value: '4.9★', label: 'Average Rating' },
-                { value: 'R5/m²', label: 'Starting Price' }
-              ].map(stat => (
-                <div key={stat.label}>
-                  <div style={{ fontSize: 28, fontFamily: 'Syne', fontWeight: 800, color: '#00C896' }}>{stat.value}</div>
-                  <div style={{ fontSize: 13, color: '#7A8B9C', marginTop: 2 }}>{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services preview */}
-      <section style={{ padding: '80px 24px', background: 'rgba(22,27,34,0.5)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', marginBottom: 12 }}>
-              Everything Clean, <span style={{ color: '#00C896' }}>Covered</span>
-            </h2>
-            <p style={{ color: '#7A8B9C', fontSize: 16 }}>8 specialist service categories, all charged per m²</p>
-          </div>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-            gap: 20
-          }}>
-            {SERVICES.map(service => (
-              <ServiceCard key={service.id} service={service} />
-            ))}
-          </div>
-
-          <div style={{ textAlign: 'center', marginTop: 44 }}>
-            <Link to={user ? '/book' : '/signup'} className="btn-primary" style={{ fontSize: 16, padding: '16px 40px' }}>
-              Book Any Service
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section style={{ padding: '80px 24px' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', marginBottom: 12 }}>
-              How It <span style={{ color: '#00C896' }}>Works</span>
-            </h2>
-            <p style={{ color: '#7A8B9C', fontSize: 16 }}>From booking to spotless — 4 simple steps</p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24 }}>
-            {[
-              { step: '01', title: 'Choose Service', desc: 'Pick from 8 categories — residential, industrial, garden, and more', icon: '🔍' },
-              { step: '02', title: 'Enter Details', desc: 'Tell us your square meters, location, and preferred date & time', icon: '📋' },
-              { step: '03', title: 'Secure Payment', desc: 'Pay via Yoco — card or instant EFT. Your booking is instantly confirmed', icon: '💳' },
-              { step: '04', title: 'We Arrive & Clean', desc: 'Our vetted team arrives on time and leaves your space spotless', icon: '✨' }
-            ].map(item => (
-              <div key={item.step} style={{
-                background: '#161B22', border: '1px solid #2E3A4E',
-                borderRadius: 16, padding: '28px 24px', position: 'relative'
-              }}>
-                <div style={{
-                  position: 'absolute', top: 20, right: 20,
-                  fontSize: 12, fontWeight: 700, color: '#2E3A4E',
-                  fontFamily: 'Syne'
-                }}>{item.step}</div>
-                <div style={{ fontSize: 36, marginBottom: 16 }}>{item.icon}</div>
-                <h3 style={{ fontSize: 18, marginBottom: 8, color: '#E8EDF4' }}>{item.title}</h3>
-                <p style={{ fontSize: 14, color: '#7A8B9C', lineHeight: 1.6 }}>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section style={{
-        padding: '80px 24px', margin: '0 24px 80px',
-        background: 'linear-gradient(135deg, rgba(0,200,150,0.12), rgba(0,168,126,0.06))',
-        border: '1px solid rgba(0,200,150,0.2)', borderRadius: 24,
-        textAlign: 'center', maxWidth: 900, marginLeft: 'auto', marginRight: 'auto'
-      }}>
-        <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', marginBottom: 16 }}>
-          Ready for a <span style={{ color: '#00C896' }}>Spotless Space?</span>
-        </h2>
-        <p style={{ color: '#7A8B9C', fontSize: 17, marginBottom: 36, maxWidth: 500, margin: '0 auto 36px' }}>
-          Join thousands of South Africans who trust CleanConnect for professional, reliable cleaning services.
-        </p>
-        <Link to={user ? '/book' : '/signup'} className="btn-primary" style={{ fontSize: 17, padding: '18px 44px' }}>
-          Get Started Free →
-        </Link>
-      </section>
-
-      {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid #2E3A4E', padding: '40px 24px',
-        textAlign: 'center', color: '#4A5568', fontSize: 14
-      }}>
-        <div style={{ marginBottom: 12, fontFamily: 'Syne', fontSize: 18, color: '#E8EDF4' }}>
-          Clean<span style={{ color: '#00C896' }}>Connect</span>
-        </div>
-        <p>© 2025 CleanConnect South Africa. All rights reserved.</p>
-        <p style={{ marginTop: 6 }}>Serving all 9 provinces 🇿🇦</p>
-      </footer>
-    </div>
+    <img
+      src={`/images/services/${id}.${TILE_IMG_EXTS[extIdx]}`}
+      alt=""
+      loading="lazy"
+      onError={() => setExtIdx(i => i + 1)}
+      style={{ position: 'absolute', top: 10, right: 10, width: 64, height: 64, objectFit: 'contain' }}
+    />
   )
 }
 
-function ServiceCard({ service }) {
+const BENEFITS = [
+  { icon: '💸', title: 'Up to 60% cheaper', desc: 'Below market rates on every service — guaranteed.' },
+  { icon: '✅', title: 'Vetted cleaners', desc: 'Background-checked, trained and rated by real customers.' },
+  { icon: '📍', title: 'Live tracking', desc: 'Watch your cleaner arrive in real time on the map.' },
+  { icon: '💳', title: 'Secure payment', desc: 'Card or instant EFT via Yoco. PCI DSS compliant.' }
+]
+
+export default function Home() {
   const { user } = useAuth()
+  const [query, setQuery] = useState('')
+
+  const bookTarget = (id) => user ? `/book?service=${id}` : '/signup'
+
+  const tiles = TILE_ORDER
+    .map(id => SERVICES.find(s => s.id === id))
+    .filter(Boolean)
+    .filter(s => {
+      if (!query) return true
+      const hay = `${TILE_LABELS[s.id]} ${s.name} ${s.description}`.toLowerCase()
+      return hay.includes(query.toLowerCase())
+    })
+
   return (
-    <Link to={user ? `/book?service=${service.id}` : '/signup'} style={{
-      display: 'block',
-      background: '#161B22', border: '1px solid #2E3A4E',
-      borderRadius: 16, padding: '24px',
-      transition: 'all 0.25s', cursor: 'pointer'
-    }}
-    onMouseEnter={e => {
-      e.currentTarget.style.borderColor = '#00C896'
-      e.currentTarget.style.transform = 'translateY(-3px)'
-      e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,200,150,0.12)'
-    }}
-    onMouseLeave={e => {
-      e.currentTarget.style.borderColor = '#2E3A4E'
-      e.currentTarget.style.transform = 'translateY(0)'
-      e.currentTarget.style.boxShadow = 'none'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-        <span style={{ fontSize: 32 }}>{service.icon}</span>
-        {service.popular && (
+    <div style={{ paddingTop: 64, background: '#FFFFFF', minHeight: '100vh' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '20px 20px 60px' }}>
+
+        {/* Search — like Uber's "Where to?" */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: '#F6F6F6', borderRadius: 100, padding: '4px 8px 4px 20px', marginBottom: 28
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+          </svg>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="What needs cleaning?"
+            style={{
+              flex: 1, background: 'transparent', border: 'none',
+              fontSize: 16, fontWeight: 600, color: '#000000', padding: '14px 0'
+            }}
+          />
+          {query && (
+            <button onClick={() => setQuery('')} style={{
+              background: '#EEEEEE', border: 'none', width: 32, height: 32,
+              borderRadius: '50%', color: '#6B6B6B', fontSize: 14, flexShrink: 0
+            }}>✕</button>
+          )}
+        </div>
+
+        {/* Big bold heading */}
+        <h1 style={{ fontSize: 40, letterSpacing: '-0.03em', marginBottom: 24 }}>Services</h1>
+
+        {/* Book a clean — 2-column tappable tile grid */}
+        <h2 style={{ fontSize: 20, marginBottom: 14 }}>Book a clean</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 36 }}>
+          {tiles.map(s => (
+            <Link key={s.id} to={bookTarget(s.id)} className="tile" style={{ minHeight: 116, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+              {/* Image if one exists in public/images/services, emoji otherwise */}
+              <TileArt id={s.id} emoji={s.icon} />
+              {s.popular && (
+                <span style={{
+                  position: 'absolute', top: 14, left: 14,
+                  background: '#00C896', color: '#FFFFFF', fontSize: 10, fontWeight: 700,
+                  padding: '3px 8px', borderRadius: 100, letterSpacing: '0.03em'
+                }}>POPULAR</span>
+              )}
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#000000' }}>{TILE_LABELS[s.id]}</div>
+              <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>From R{s.pricePerSqm}/m²</div>
+            </Link>
+          ))}
+          {tiles.length === 0 && (
+            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '40px 0', color: '#6B6B6B' }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+              Nothing matches "{query}" — try "home" or "office".
+            </div>
+          )}
+        </div>
+
+        {/* Why CleanConnect — horizontal scroll of benefit cards */}
+        <h2 style={{ fontSize: 20, marginBottom: 14 }}>Why CleanConnect</h2>
+        <div className="hscroll" style={{ marginBottom: 36 }}>
+          {BENEFITS.map(b => (
+            <div key={b.title} style={{
+              width: 220, background: '#F6F6F6', borderRadius: 16, padding: '18px 18px 20px'
+            }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>{b.icon}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#000000', marginBottom: 4 }}>{b.title}</div>
+              <div style={{ fontSize: 13, color: '#6B6B6B', lineHeight: 1.5 }}>{b.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Promo banner */}
+        <Link to={user ? '/book' : '/signup'} style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          background: '#00C896', borderRadius: 16, padding: '22px 22px', marginBottom: 40
+        }}>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.01em' }}>
+              Ready for a spotless space?
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 3 }}>
+              Book in under 2 minutes · Serving all 9 provinces 🇿🇦
+            </div>
+          </div>
           <span style={{
-            background: 'rgba(0,200,150,0.15)', color: '#00C896',
-            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100,
-            border: '1px solid rgba(0,200,150,0.2)'
-          }}>POPULAR</span>
-        )}
+            background: '#FFFFFF', color: '#000000', fontWeight: 700, fontSize: 14,
+            padding: '10px 18px', borderRadius: 100, whiteSpace: 'nowrap', flexShrink: 0
+          }}>Book now</span>
+        </Link>
+
+        {/* Footer */}
+        <footer style={{ borderTop: '1px solid #F0F0F0', paddingTop: 24, textAlign: 'center', color: '#9E9E9E', fontSize: 13 }}>
+          <div style={{ marginBottom: 8, fontSize: 15, fontWeight: 800, color: '#000000' }}>
+            Clean<span style={{ color: '#00C896' }}>Connect</span>
+          </div>
+          <p>© 2025 CleanConnect South Africa · 500+ cleaners · 4.9★ average rating</p>
+        </footer>
       </div>
-      <h3 style={{ fontSize: 16, marginBottom: 6, color: '#E8EDF4' }}>{service.name}</h3>
-      <p style={{ fontSize: 13, color: '#7A8B9C', lineHeight: 1.5, marginBottom: 16 }}>{service.description}</p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ color: '#00C896', fontWeight: 700, fontSize: 15 }}>
-          R{service.pricePerSqm}/m²
-        </span>
-        <span style={{ color: '#4A5568', fontSize: 12 }}>{service.duration}</span>
-      </div>
-    </Link>
+    </div>
   )
 }

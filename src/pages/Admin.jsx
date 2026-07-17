@@ -119,21 +119,21 @@ export default function Admin() {
 
   if (!authenticated) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 40px', background: '#0D1117' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 40px', background: '#FFFFFF' }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 16px' }}>🔐</div>
             <h1 style={{ fontSize: 28, marginBottom: 8 }}>Admin Dashboard</h1>
-            <p style={{ color: '#7A8B9C' }}>CleanConnect Operations Centre</p>
+            <p style={{ color: '#6B6B6B' }}>CleanConnect Operations Centre</p>
           </div>
-          <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 20, padding: 36 }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', borderRadius: 20, padding: 36, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)' }}>
             <form onSubmit={handlePinSubmit}>
-              {pinError && <div style={{ background: 'rgba(255,92,58,0.1)', border: '1px solid rgba(255,92,58,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#FF5C3A', fontSize: 14 }}>⚠️ {pinError}</div>}
-              <label style={{ display: 'block', fontSize: 13, color: '#7A8B9C', marginBottom: 8 }}>Admin PIN</label>
+              {pinError && <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#E11900', fontSize: 14 }}>⚠️ {pinError}</div>}
+              <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>Admin PIN</label>
               <input className="input-field" type="password" placeholder="Enter PIN" value={pin} onChange={e => setPin(e.target.value)} style={{ marginBottom: 16 }} autoFocus />
               <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 14 }}>Access Dashboard →</button>
             </form>
-            <p style={{ fontSize: 12, color: '#4A5568', textAlign: 'center', marginTop: 16 }}>Default PIN: <code style={{ color: '#00C896' }}>cleanconnect2025</code></p>
+            <p style={{ fontSize: 12, color: '#9E9E9E', textAlign: 'center', marginTop: 16 }}>Default PIN: <code style={{ color: '#00C896' }}>cleanconnect2025</code></p>
           </div>
         </div>
       </div>
@@ -141,16 +141,16 @@ export default function Admin() {
   }
 
   return (
-    <div style={{ paddingTop: 68, minHeight: '100vh', background: '#0D1117' }}>
+    <div style={{ paddingTop: 68, minHeight: '100vh', background: '#FFFFFF' }}>
       <div style={{ maxWidth: 1300, margin: '0 auto', padding: '32px 24px 80px' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 30, marginBottom: 4 }}>Admin Dashboard</h1>
-            <p style={{ color: '#7A8B9C', fontSize: 14 }}>CleanConnect Operations Centre · {bookings.length} total bookings</p>
+            <p style={{ color: '#6B6B6B', fontSize: 14 }}>CleanConnect Operations Centre · {bookings.length} total bookings</p>
           </div>
-          <button onClick={fetchBookings} style={{ background: '#161B22', border: '1px solid #2E3A4E', color: '#7A8B9C', padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={fetchBookings} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', color: '#6B6B6B', padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
             🔄 Refresh Data
           </button>
         </div>
@@ -158,23 +158,23 @@ export default function Admin() {
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 14, marginBottom: 32 }}>
           {[
-            { label: 'Total Bookings', value: stats.total, icon: '📋', color: '#E8EDF4' },
+            { label: 'Total Bookings', value: stats.total, icon: '📋', color: '#000000' },
             { label: 'Total Revenue', value: formatCurrency(stats.revenue), icon: '💰', color: '#00C896' },
-            { label: 'This Week', value: stats.thisWeek, icon: '📅', color: '#63B3ED' },
-            { label: 'Pending', value: stats.pending, icon: '⏳', color: '#FFA500' },
+            { label: 'This Week', value: stats.thisWeek, icon: '📅', color: '#276EF1' },
+            { label: 'Pending', value: stats.pending, icon: '⏳', color: '#C46A00' },
             { label: 'Completed', value: stats.completed, icon: '✅', color: '#00C896' },
-            { label: 'Unassigned', value: stats.unassigned, icon: '⚠️', color: stats.unassigned > 0 ? '#FF5C3A' : '#7A8B9C' },
+            { label: 'Unassigned', value: stats.unassigned, icon: '⚠️', color: stats.unassigned > 0 ? '#E11900' : '#6B6B6B' },
           ].map(s => (
-            <div key={s.label} style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 14, padding: '18px 20px' }}>
+            <div key={s.label} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 14, padding: '18px 20px' }}>
               <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Syne', color: s.color, marginBottom: 3 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: '#4A5568' }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Inter', color: s.color, marginBottom: 3 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: '#9E9E9E' }}>{s.label}</div>
             </div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 12, padding: 4, width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 12, padding: 4, width: 'fit-content' }}>
           {[
             { id: 'customers', label: '👥 Customers', count: customers.length },
             { id: 'bookings', label: '📋 All Bookings', count: bookings.length },
@@ -184,13 +184,13 @@ export default function Admin() {
             <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
               padding: '10px 18px', borderRadius: 9, border: 'none', cursor: 'pointer',
               background: activeTab === t.id ? '#00C896' : 'transparent',
-              color: activeTab === t.id ? '#0D1117' : '#7A8B9C',
+              color: activeTab === t.id ? '#FFFFFF' : '#6B6B6B',
               fontSize: 13, fontWeight: activeTab === t.id ? 600 : 400, transition: 'all 0.2s',
               display: 'flex', alignItems: 'center', gap: 6
             }}>
               {t.label}
               {t.count !== undefined && (
-                <span style={{ background: activeTab === t.id ? 'rgba(0,0,0,0.15)' : '#2E3A4E', borderRadius: 100, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>{t.count}</span>
+                <span style={{ background: activeTab === t.id ? 'rgba(0,0,0,0.15)' : '#E8E8E8', borderRadius: 100, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>{t.count}</span>
               )}
             </button>
           ))}
@@ -244,8 +244,8 @@ export default function Admin() {
               </select>
             </div>
 
-            <div style={{ marginBottom: 12, fontSize: 13, color: '#7A8B9C' }}>
-              Showing <strong style={{ color: '#E8EDF4' }}>{filtered.length}</strong> of {bookings.length} bookings
+            <div style={{ marginBottom: 12, fontSize: 13, color: '#6B6B6B' }}>
+              Showing <strong style={{ color: '#000000' }}>{filtered.length}</strong> of {bookings.length} bookings
             </div>
 
             {loading ? (
@@ -273,10 +273,10 @@ export default function Admin() {
         {activeTab === 'unassigned' && (
           <div>
             {stats.unassigned === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px', background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16 }}>
+              <div style={{ textAlign: 'center', padding: '60px', background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16 }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
                 <h3 style={{ fontSize: 20, marginBottom: 8 }}>All bookings assigned!</h3>
-                <p style={{ color: '#7A8B9C' }}>Every active booking has a cleaner assigned.</p>
+                <p style={{ color: '#6B6B6B' }}>Every active booking has a cleaner assigned.</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -324,21 +324,21 @@ function CustomerRow({ customer, onViewBooking }) {
   }, {})
 
   return (
-    <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.2s' }}>
+    <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, overflow: 'hidden', transition: 'border-color 0.2s' }}>
       {/* Customer header */}
       <div
         onClick={() => setExpanded(v => !v)}
         style={{ padding: '18px 24px', display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', flexWrap: 'wrap' }}
       >
         {/* Avatar */}
-        <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: '#0D1117', flexShrink: 0, fontFamily: 'Syne' }}>
+        <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: '#FFFFFF', flexShrink: 0, fontFamily: 'Inter' }}>
           {customer.name?.[0]?.toUpperCase() || '?'}
         </div>
 
         {/* Name + phone */}
         <div style={{ flex: 1, minWidth: 160 }}>
-          <div style={{ fontWeight: 600, color: '#E8EDF4', fontSize: 16, marginBottom: 3 }}>{customer.name}</div>
-          <div style={{ fontSize: 13, color: '#7A8B9C', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ fontWeight: 600, color: '#000000', fontSize: 16, marginBottom: 3 }}>{customer.name}</div>
+          <div style={{ fontSize: 13, color: '#6B6B6B', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <span>📱 {customer.phone}</span>
             <span>📍 {lastBooking?.city}, {lastBooking?.province}</span>
           </div>
@@ -358,18 +358,18 @@ function CustomerRow({ customer, onViewBooking }) {
 
         {/* Total spent */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ color: '#00C896', fontWeight: 800, fontFamily: 'Syne', fontSize: 18 }}>{formatCurrency(customer.totalSpent)}</div>
-          <div style={{ fontSize: 12, color: '#4A5568' }}>{customer.bookings.length} booking{customer.bookings.length !== 1 ? 's' : ''}</div>
+          <div style={{ color: '#00C896', fontWeight: 800, fontFamily: 'Inter', fontSize: 18 }}>{formatCurrency(customer.totalSpent)}</div>
+          <div style={{ fontSize: 12, color: '#9E9E9E' }}>{customer.bookings.length} booking{customer.bookings.length !== 1 ? 's' : ''}</div>
         </div>
 
         {/* Expand arrow */}
-        <div style={{ color: '#4A5568', fontSize: 18, transition: 'transform 0.2s', transform: expanded ? 'rotate(90deg)' : 'none' }}>›</div>
+        <div style={{ color: '#9E9E9E', fontSize: 18, transition: 'transform 0.2s', transform: expanded ? 'rotate(90deg)' : 'none' }}>›</div>
       </div>
 
       {/* Expanded bookings list */}
       {expanded && (
-        <div style={{ borderTop: '1px solid #1E2530' }}>
-          <div style={{ padding: '12px 24px 6px', fontSize: 11, color: '#4A5568', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <div style={{ borderTop: '1px solid #EEEEEE' }}>
+          <div style={{ padding: '12px 24px 6px', fontSize: 11, color: '#9E9E9E', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Booking History
           </div>
           {customer.bookings.map(booking => {
@@ -379,21 +379,21 @@ function CustomerRow({ customer, onViewBooking }) {
               <div
                 key={booking.id}
                 onClick={() => onViewBooking(booking)}
-                style={{ padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 14, borderTop: '1px solid #1A2130', cursor: 'pointer', transition: 'background 0.15s', flexWrap: 'wrap' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#1A2130'}
+                style={{ padding: '14px 24px', display: 'flex', alignItems: 'center', gap: 14, borderTop: '1px solid #F2F2F2', cursor: 'pointer', transition: 'background 0.15s', flexWrap: 'wrap' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#F2F2F2'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 <span style={{ fontSize: 22, flexShrink: 0 }}>{service?.icon || '🧹'}</span>
                 <div style={{ flex: 1, minWidth: 160 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: '#E8EDF4', marginBottom: 2 }}>{booking.service_name}</div>
-                  <div style={{ fontSize: 12, color: '#7A8B9C' }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#000000', marginBottom: 2 }}>{booking.service_name}</div>
+                  <div style={{ fontSize: 12, color: '#6B6B6B' }}>
                     {booking.booking_date} · {booking.time_slot} · {booking.sqm}m² · {booking.city}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <span className={`badge ${conf.color}`} style={{ fontSize: 11 }}>{conf.icon} {conf.label}</span>
-                  <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Syne', fontSize: 15 }}>{formatCurrency(booking.amount)}</span>
-                  <span style={{ fontSize: 11, color: '#4A5568', fontFamily: 'Syne' }}>{booking.id}</span>
+                  <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Inter', fontSize: 15 }}>{formatCurrency(booking.amount)}</span>
+                  <span style={{ fontSize: 11, color: '#9E9E9E', fontFamily: 'Inter' }}>{booking.id}</span>
                 </div>
               </div>
             )
@@ -411,8 +411,8 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
 
   return (
     <div style={{
-      background: '#161B22',
-      border: `1px solid ${highlight ? '#FF5C3A' : '#2E3A4E'}`,
+      background: '#F6F6F6',
+      border: `1px solid ${highlight ? '#E11900' : '#E8E8E8'}`,
       borderRadius: 14, padding: '16px 20px',
       display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap',
       transition: 'all 0.2s'
@@ -423,18 +423,18 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
       {/* Customer + service info */}
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-          <span style={{ fontWeight: 700, color: '#E8EDF4', fontSize: 15 }}>{booking.contact_name}</span>
-          <span style={{ fontSize: 12, color: '#7A8B9C' }}>·</span>
-          <span style={{ fontSize: 13, color: '#7A8B9C' }}>📱 {booking.contact_phone}</span>
+          <span style={{ fontWeight: 700, color: '#000000', fontSize: 15 }}>{booking.contact_name}</span>
+          <span style={{ fontSize: 12, color: '#6B6B6B' }}>·</span>
+          <span style={{ fontSize: 13, color: '#6B6B6B' }}>📱 {booking.contact_phone}</span>
         </div>
-        <div style={{ fontSize: 13, color: '#7A8B9C', marginBottom: 3 }}>
-          {service?.icon} {booking.service_name} · <strong style={{ color: '#E8EDF4' }}>{booking.sqm}m²</strong>
+        <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 3 }}>
+          {service?.icon} {booking.service_name} · <strong style={{ color: '#000000' }}>{booking.sqm}m²</strong>
         </div>
-        <div style={{ fontSize: 12, color: '#4A5568' }}>
+        <div style={{ fontSize: 12, color: '#9E9E9E' }}>
           📍 {booking.address}, {booking.city} · 📅 {booking.booking_date} · ⏰ {booking.time_slot}
         </div>
         {booking.special_instructions && (
-          <div style={{ fontSize: 12, color: '#7A8B9C', marginTop: 4, fontStyle: 'italic' }}>
+          <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 4, fontStyle: 'italic' }}>
             📝 "{booking.special_instructions}"
           </div>
         )}
@@ -444,14 +444,14 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         {/* Assign cleaner */}
         <select value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} onClick={e => e.stopPropagation()}
-          style={{ background: booking.cleaner_assigned ? '#1E2530' : 'rgba(255,92,58,0.08)', border: `1px solid ${booking.cleaner_assigned ? '#2E3A4E' : '#FF5C3A'}`, borderRadius: 8, padding: '7px 10px', color: booking.cleaner_assigned ? '#E8EDF4' : '#FF8C78', fontSize: 12, cursor: 'pointer' }}>
+          style={{ background: booking.cleaner_assigned ? '#EEEEEE' : 'rgba(225,25,0,0.08)', border: `1px solid ${booking.cleaner_assigned ? '#E8E8E8' : '#E11900'}`, borderRadius: 8, padding: '7px 10px', color: booking.cleaner_assigned ? '#000000' : '#E11900', fontSize: 12, cursor: 'pointer' }}>
           <option value="">⚠️ Assign cleaner...</option>
           {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
         </select>
 
         {/* Status */}
         <select value={booking.status} onChange={e => onStatusChange(e.target.value)} onClick={e => e.stopPropagation()}
-          style={{ background: '#1E2530', border: '1px solid #2E3A4E', borderRadius: 8, padding: '7px 10px', color: '#E8EDF4', fontSize: 12, cursor: 'pointer' }}>
+          style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', borderRadius: 8, padding: '7px 10px', color: '#000000', fontSize: 12, cursor: 'pointer' }}>
           <option value="pending">⏳ Pending</option>
           <option value="confirmed">✅ Confirmed</option>
           <option value="in-progress">🔄 In Progress</option>
@@ -463,12 +463,12 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
       {/* Amount + view */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ color: '#00C896', fontWeight: 800, fontFamily: 'Syne', fontSize: 17 }}>{formatCurrency(booking.amount)}</div>
-          <div style={{ fontSize: 11, color: booking.payment_status === 'paid' ? '#00C896' : '#FFA500' }}>
+          <div style={{ color: '#00C896', fontWeight: 800, fontFamily: 'Inter', fontSize: 17 }}>{formatCurrency(booking.amount)}</div>
+          <div style={{ fontSize: 11, color: booking.payment_status === 'paid' ? '#00C896' : '#C46A00' }}>
             {booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? '↩ Refunded' : '⏳ Unpaid'}
           </div>
         </div>
-        <button onClick={onSelect} style={{ background: '#1E2530', border: '1px solid #2E3A4E', color: '#7A8B9C', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>
+        <button onClick={onSelect} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>
           View →
         </button>
       </div>
@@ -491,7 +491,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(6px)' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 20, width: '100%', maxWidth: 560, maxHeight: '88vh', overflowY: 'auto', padding: 32 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 20, width: '100%', maxWidth: 560, maxHeight: '88vh', overflowY: 'auto', padding: 32 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -502,13 +502,13 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
             </div>
             <span className={`badge ${conf.color}`}>{conf.icon} {conf.label}</span>
           </div>
-          <button onClick={onClose} style={{ background: '#1E2530', border: '1px solid #2E3A4E', color: '#7A8B9C', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>✕</button>
+          <button onClick={onClose} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B', width: 36, height: 36, borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>✕</button>
         </div>
 
         {/* Booking ID */}
-        <div style={{ background: '#1E2530', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ color: '#4A5568', fontSize: 13 }}>Booking Reference</span>
-          <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Syne' }}>{booking.id}</span>
+        <div style={{ background: '#EEEEEE', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ color: '#9E9E9E', fontSize: 13 }}>Booking Reference</span>
+          <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Inter' }}>{booking.id}</span>
         </div>
 
         {/* Customer info */}
@@ -516,19 +516,19 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
           <div style={{ fontSize: 11, color: '#00C896', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Customer Details</div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#0D1117' }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#FFFFFF' }}>
                 {booking.contact_name?.[0]?.toUpperCase()}
               </div>
               <div>
-                <div style={{ fontWeight: 600, color: '#E8EDF4', fontSize: 15 }}>{booking.contact_name}</div>
-                <div style={{ fontSize: 13, color: '#7A8B9C' }}>📱 {booking.contact_phone}</div>
+                <div style={{ fontWeight: 600, color: '#000000', fontSize: 15 }}>{booking.contact_name}</div>
+                <div style={{ fontSize: 13, color: '#6B6B6B' }}>📱 {booking.contact_phone}</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Details grid */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 20, background: '#1A2130', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 20, background: '#F2F2F2', borderRadius: 12, overflow: 'hidden' }}>
           {[
             { label: '📐 Service Area', value: `${booking.sqm} m²` },
             { label: '📍 Address', value: booking.address },
@@ -540,16 +540,16 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
             ...(booking.special_instructions ? [{ label: '📝 Notes', value: booking.special_instructions }] : []),
             { label: '🕐 Booked On', value: new Date(booking.created_at).toLocaleString('en-ZA') },
           ].map((row, i) => (
-            <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 16px', borderBottom: i < 8 ? '1px solid #1E2530' : 'none', gap: 16 }}>
-              <span style={{ color: '#7A8B9C', fontSize: 13, flexShrink: 0 }}>{row.label}</span>
-              <span style={{ color: '#E8EDF4', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{row.value}</span>
+            <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 16px', borderBottom: i < 8 ? '1px solid #EEEEEE' : 'none', gap: 16 }}>
+              <span style={{ color: '#6B6B6B', fontSize: 13, flexShrink: 0 }}>{row.label}</span>
+              <span style={{ color: '#000000', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{row.value}</span>
             </div>
           ))}
         </div>
 
         {/* Assign cleaner */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 13, color: '#7A8B9C', marginBottom: 8, fontWeight: 500 }}>👤 Assign Cleaner</label>
+          <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 8, fontWeight: 500 }}>👤 Assign Cleaner</label>
           <select className="input-field" value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} style={{ cursor: 'pointer' }}>
             <option value="">Select a cleaner...</option>
             {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
@@ -561,16 +561,16 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
 
         {/* Update status */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, color: '#7A8B9C', marginBottom: 10, fontWeight: 500 }}>📌 Update Status</label>
+          <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 10, fontWeight: 500 }}>📌 Update Status</label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
             {['pending','confirmed','in-progress','completed','cancelled'].map(s => {
               const c = STATUS_CONFIG[s] || STATUS_CONFIG.pending
               return (
                 <button key={s} onClick={() => onStatusChange(s)} style={{
                   padding: '10px 8px', borderRadius: 10, fontSize: 12, cursor: 'pointer',
-                  border: `2px solid ${booking.status === s ? '#00C896' : '#2E3A4E'}`,
-                  background: booking.status === s ? 'rgba(0,200,150,0.1)' : '#1E2530',
-                  color: booking.status === s ? '#00C896' : '#7A8B9C',
+                  border: `2px solid ${booking.status === s ? '#00C896' : '#E8E8E8'}`,
+                  background: booking.status === s ? 'rgba(0,200,150,0.1)' : '#EEEEEE',
+                  color: booking.status === s ? '#00C896' : '#6B6B6B',
                   fontWeight: booking.status === s ? 600 : 400
                 }}>{c.icon} {s.charAt(0).toUpperCase() + s.slice(1)}</button>
               )
@@ -579,15 +579,15 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
         </div>
 
         {/* Progress timeline */}
-        <div style={{ background: '#1E2530', borderRadius: 12, padding: '16px 20px' }}>
-          <div style={{ fontSize: 12, color: '#4A5568', fontWeight: 600, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Service Progress</div>
+        <div style={{ background: '#EEEEEE', borderRadius: 12, padding: '16px 20px' }}>
+          <div style={{ fontSize: 12, color: '#9E9E9E', fontWeight: 600, marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Service Progress</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {progressSteps.map((step, i) => (
               <div key={step.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, background: step.done ? '#00C896' : '#2A3444', border: `2px solid ${step.done ? '#00C896' : '#2E3A4E'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: step.done ? '#0D1117' : '#4A5568', fontWeight: 700 }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, background: step.done ? '#00C896' : '#E4E4E4', border: `2px solid ${step.done ? '#00C896' : '#E8E8E8'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: step.done ? '#FFFFFF' : '#9E9E9E', fontWeight: 700 }}>
                   {step.done ? '✓' : i + 1}
                 </div>
-                <span style={{ fontSize: 13, color: step.done ? '#E8EDF4' : '#4A5568', fontWeight: step.done ? 500 : 400 }}>{step.label}</span>
+                <span style={{ fontSize: 13, color: step.done ? '#000000' : '#9E9E9E', fontWeight: step.done ? 500 : 400 }}>{step.label}</span>
               </div>
             ))}
           </div>
@@ -618,19 +618,19 @@ function RevenueStats({ bookings }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px,1fr))', gap: 20 }}>
       {/* Revenue by service */}
-      <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16, padding: 24 }}>
-        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#7A8B9C', fontFamily: 'DM Sans' }}>💰 Revenue by Service</h3>
+      <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24 }}>
+        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>💰 Revenue by Service</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {byService.map(s => (
             <div key={s.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: '#7A8B9C' }}>{s.icon} {s.name}</span>
+                <span style={{ fontSize: 13, color: '#6B6B6B' }}>{s.icon} {s.name}</span>
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: 13, color: '#E8EDF4', fontWeight: 600 }}>{formatCurrency(s.revenue)}</span>
-                  <span style={{ fontSize: 11, color: '#4A5568', marginLeft: 8 }}>{s.count} bookings</span>
+                  <span style={{ fontSize: 13, color: '#000000', fontWeight: 600 }}>{formatCurrency(s.revenue)}</span>
+                  <span style={{ fontSize: 11, color: '#9E9E9E', marginLeft: 8 }}>{s.count} bookings</span>
                 </div>
               </div>
-              <div style={{ height: 6, background: '#1E2530', borderRadius: 3 }}>
+              <div style={{ height: 6, background: '#EEEEEE', borderRadius: 3 }}>
                 <div style={{ height: '100%', width: `${(s.revenue / maxRevenue) * 100}%`, background: 'linear-gradient(90deg,#00C896,#00E5B0)', borderRadius: 3, transition: 'width 0.5s' }} />
               </div>
             </div>
@@ -639,20 +639,20 @@ function RevenueStats({ bookings }) {
       </div>
 
       {/* Revenue by province */}
-      <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16, padding: 24 }}>
-        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#7A8B9C', fontFamily: 'DM Sans' }}>🌍 Revenue by Province</h3>
+      <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24 }}>
+        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>🌍 Revenue by Province</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {byProvince.map(([province, data]) => (
             <div key={province}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: '#7A8B9C' }}>📍 {province}</span>
+                <span style={{ fontSize: 13, color: '#6B6B6B' }}>📍 {province}</span>
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: 13, color: '#E8EDF4', fontWeight: 600 }}>{formatCurrency(data.revenue)}</span>
-                  <span style={{ fontSize: 11, color: '#4A5568', marginLeft: 8 }}>{data.count} bookings</span>
+                  <span style={{ fontSize: 13, color: '#000000', fontWeight: 600 }}>{formatCurrency(data.revenue)}</span>
+                  <span style={{ fontSize: 11, color: '#9E9E9E', marginLeft: 8 }}>{data.count} bookings</span>
                 </div>
               </div>
-              <div style={{ height: 6, background: '#1E2530', borderRadius: 3 }}>
-                <div style={{ height: '100%', width: `${(data.revenue / maxProv) * 100}%`, background: 'linear-gradient(90deg,#63B3ED,#90CDF4)', borderRadius: 3, transition: 'width 0.5s' }} />
+              <div style={{ height: 6, background: '#EEEEEE', borderRadius: 3 }}>
+                <div style={{ height: '100%', width: `${(data.revenue / maxProv) * 100}%`, background: 'linear-gradient(90deg,#276EF1,#5B93F5)', borderRadius: 3, transition: 'width 0.5s' }} />
               </div>
             </div>
           ))}
@@ -660,22 +660,22 @@ function RevenueStats({ bookings }) {
       </div>
 
       {/* Recent activity */}
-      <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16, padding: 24, gridColumn: 'span 2' }}>
-        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#7A8B9C', fontFamily: 'DM Sans' }}>🕐 Recent Bookings</h3>
+      <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24, gridColumn: 'span 2' }}>
+        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>🕐 Recent Bookings</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 10, overflow: 'hidden' }}>
           {bookings.slice(0, 8).map((b, i) => {
             const service = SERVICES.find(s => s.id === b.service_id)
             const conf = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending
             return (
-              <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: i % 2 === 0 ? '#1A2130' : 'transparent', flexWrap: 'wrap' }}>
+              <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: i % 2 === 0 ? '#F2F2F2' : 'transparent', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 20 }}>{service?.icon || '🧹'}</span>
                 <div style={{ flex: 1, minWidth: 140 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: '#E8EDF4' }}>{b.contact_name}</div>
-                  <div style={{ fontSize: 12, color: '#4A5568' }}>{b.service_name} · {b.city}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: '#000000' }}>{b.contact_name}</div>
+                  <div style={{ fontSize: 12, color: '#9E9E9E' }}>{b.service_name} · {b.city}</div>
                 </div>
                 <span className={`badge ${conf.color}`} style={{ fontSize: 11 }}>{conf.label}</span>
-                <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Syne', fontSize: 14 }}>{formatCurrency(b.amount)}</span>
-                <span style={{ fontSize: 11, color: '#4A5568' }}>{new Date(b.created_at).toLocaleDateString('en-ZA')}</span>
+                <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Inter', fontSize: 14 }}>{formatCurrency(b.amount)}</span>
+                <span style={{ fontSize: 11, color: '#9E9E9E' }}>{new Date(b.created_at).toLocaleDateString('en-ZA')}</span>
               </div>
             )
           })}
@@ -687,16 +687,16 @@ function RevenueStats({ bookings }) {
 
 function EmptyState({ icon, message }) {
   return (
-    <div style={{ textAlign: 'center', padding: '60px', background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16 }}>
+    <div style={{ textAlign: 'center', padding: '60px', background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16 }}>
       <div style={{ fontSize: 44, marginBottom: 14 }}>{icon}</div>
-      <p style={{ color: '#7A8B9C', fontSize: 16 }}>{message}</p>
+      <p style={{ color: '#6B6B6B', fontSize: 16 }}>{message}</p>
     </div>
   )
 }
 
 function LoadingState() {
   return (
-    <div style={{ textAlign: 'center', padding: '60px', color: '#7A8B9C' }}>
+    <div style={{ textAlign: 'center', padding: '60px', color: '#6B6B6B' }}>
       <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
       Loading bookings...
     </div>

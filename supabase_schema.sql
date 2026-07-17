@@ -201,3 +201,29 @@ DO $$ BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE cleaners;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+
+
+-- ============================================================
+-- V5 ADDITIONS — Real pictures (cleaner profile photos)
+-- ============================================================
+
+ALTER TABLE cleaners ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+-- Public bucket for cleaner profile photos
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('cleaner-photos', 'cleaner-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Each cleaner uploads into a folder named after their auth user id
+CREATE POLICY "Cleaners upload own photo" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'cleaner-photos' AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Cleaners update own photo" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'cleaner-photos' AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Cleaner photos are public" ON storage.objects
+  FOR SELECT USING (bucket_id = 'cleaner-photos');

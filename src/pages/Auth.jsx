@@ -49,7 +49,7 @@ export function Login() {
         </button>
       </form>
     )}
-    <p style={{ textAlign: 'center', marginTop: 24, color: '#7A8B9C', fontSize: 15 }}>
+    <p style={{ textAlign: 'center', marginTop: 24, color: '#6B6B6B', fontSize: 15 }}>
       Don't have an account?{' '}
       <Link to="/signup" style={{ color: '#00C896', fontWeight: 500 }}>Sign up free</Link>
     </p>
@@ -78,7 +78,7 @@ function GoogleButton() {
       <button type="button" onClick={handleClick} disabled={loading} style={{
         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
         padding: 14, borderRadius: 12, cursor: 'pointer', fontSize: 15, fontWeight: 500,
-        background: '#FFFFFF', border: '1px solid #2E3A4E', color: '#1F2937', transition: 'opacity 0.2s',
+        background: '#FFFFFF', border: '1px solid #E8E8E8', color: '#1F2937', transition: 'opacity 0.2s',
         opacity: loading ? 0.7 : 1
       }}>
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -96,9 +96,9 @@ function GoogleButton() {
 function Divider() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
-      <div style={{ flex: 1, height: 1, background: '#2E3A4E' }} />
-      <span style={{ fontSize: 12, color: '#4A5568' }}>or</span>
-      <div style={{ flex: 1, height: 1, background: '#2E3A4E' }} />
+      <div style={{ flex: 1, height: 1, background: '#E8E8E8' }} />
+      <span style={{ fontSize: 12, color: '#9E9E9E' }}>or</span>
+      <div style={{ flex: 1, height: 1, background: '#E8E8E8' }} />
     </div>
   )
 }
@@ -107,13 +107,13 @@ function MethodToggle({ method, onChange }) {
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 24,
-      background: '#0D1117', border: '1px solid #2E3A4E', borderRadius: 12, padding: 4
+      background: '#FFFFFF', border: '1px solid #E8E8E8', borderRadius: 12, padding: 4
     }}>
       {[{ id: 'email', label: '✉️ Email' }, { id: 'phone', label: '📱 Phone OTP' }].map(m => (
         <button key={m.id} type="button" onClick={() => onChange(m.id)} style={{
           padding: '10px 8px', borderRadius: 9, border: 'none', cursor: 'pointer',
           background: method === m.id ? '#00C896' : 'transparent',
-          color: method === m.id ? '#0D1117' : '#7A8B9C',
+          color: method === m.id ? '#FFFFFF' : '#6B6B6B',
           fontSize: 14, fontWeight: method === m.id ? 600 : 400, transition: 'all 0.2s'
         }}>{m.label}</button>
       ))}
@@ -164,8 +164,8 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
   if (step === 'code') return (
     <form onSubmit={handleVerify}>
       {error && <ErrorBox message={error} />}
-      <p style={{ color: '#7A8B9C', fontSize: 14, marginBottom: 16 }}>
-        We sent a 6-digit code to <strong style={{ color: '#E8EDF4' }}>{e164}</strong>
+      <p style={{ color: '#6B6B6B', fontSize: 14, marginBottom: 16 }}>
+        We sent a 6-digit code to <strong style={{ color: '#000000' }}>{e164}</strong>
       </p>
       <Field label="Verification code">
         <input className="input-field" type="text" inputMode="numeric" autoComplete="one-time-code"
@@ -178,7 +178,7 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
         {loading ? 'Verifying...' : 'Verify & Sign In →'}
       </button>
       <button type="button" onClick={() => { setStep('phone'); setCode(''); setError('') }}
-        style={{ width: '100%', marginTop: 12, background: 'transparent', border: 'none', color: '#7A8B9C', fontSize: 14, cursor: 'pointer' }}>
+        style={{ width: '100%', marginTop: 12, background: 'transparent', border: 'none', color: '#6B6B6B', fontSize: 14, cursor: 'pointer' }}>
         ← Use a different number
       </button>
     </form>
@@ -195,7 +195,7 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
         style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16 }}>
         {loading ? 'Sending code...' : 'Send Code via SMS →'}
       </button>
-      <p style={{ fontSize: 12, color: '#4A5568', textAlign: 'center', marginTop: 12 }}>
+      <p style={{ fontSize: 12, color: '#9E9E9E', textAlign: 'center', marginTop: 12 }}>
         Standard SMS rates may apply. No password needed.
       </p>
     </form>
@@ -233,8 +233,8 @@ export function Signup() {
   if (success) return <AuthLayout title="Account Created! 🎉" subtitle="Check your email to confirm your account">
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
       <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
-      <p style={{ color: '#7A8B9C', lineHeight: 1.6, marginBottom: 24 }}>
-        We sent a confirmation email to <strong style={{ color: '#E8EDF4' }}>{form.email}</strong>.<br />
+      <p style={{ color: '#6B6B6B', lineHeight: 1.6, marginBottom: 24 }}>
+        We sent a confirmation email to <strong style={{ color: '#000000' }}>{form.email}</strong>.<br />
         Click the link to activate your account.
       </p>
       <Link to="/login" className="btn-primary" style={{ justifyContent: 'center' }}>
@@ -286,10 +286,10 @@ export function Signup() {
         </button>
       </form>
     )}
-    <p style={{ fontSize: 12, color: '#4A5568', textAlign: 'center', marginTop: 12 }}>
+    <p style={{ fontSize: 12, color: '#9E9E9E', textAlign: 'center', marginTop: 12 }}>
       By signing up, you agree to our Terms of Service and Privacy Policy.
     </p>
-    <p style={{ textAlign: 'center', marginTop: 20, color: '#7A8B9C', fontSize: 15 }}>
+    <p style={{ textAlign: 'center', marginTop: 20, color: '#6B6B6B', fontSize: 15 }}>
       Already have an account?{' '}
       <Link to="/login" style={{ color: '#00C896', fontWeight: 500 }}>Sign in</Link>
     </p>
@@ -301,7 +301,7 @@ function AuthLayout({ title, subtitle, children }) {
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center',
       justifyContent: 'center', padding: '100px 24px 40px',
-      background: '#0D1117', position: 'relative', overflow: 'hidden'
+      background: '#FFFFFF', position: 'relative', overflow: 'hidden'
     }}>
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -315,17 +315,18 @@ function AuthLayout({ title, subtitle, children }) {
             background: 'linear-gradient(135deg,#00C896,#00A87E)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
           }}>✦</div>
-          <span style={{ fontFamily: 'Syne', fontSize: 20, fontWeight: 800 }}>
+          <span style={{ fontFamily: 'Inter', fontSize: 20, fontWeight: 800 }}>
             Clean<span style={{ color: '#00C896' }}>Connect</span>
           </span>
         </Link>
 
         <div style={{
-          background: '#161B22', border: '1px solid #2E3A4E',
-          borderRadius: 20, padding: '40px 36px'
+          background: '#FFFFFF', border: '1px solid #EEEEEE',
+          borderRadius: 20, padding: '40px 36px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)'
         }}>
-          <h1 style={{ fontSize: 26, marginBottom: 6, color: '#E8EDF4' }}>{title}</h1>
-          <p style={{ color: '#7A8B9C', fontSize: 15, marginBottom: 28 }}>{subtitle}</p>
+          <h1 style={{ fontSize: 26, marginBottom: 6, color: '#000000' }}>{title}</h1>
+          <p style={{ color: '#6B6B6B', fontSize: 15, marginBottom: 28 }}>{subtitle}</p>
           {children}
         </div>
       </div>
@@ -336,7 +337,7 @@ function AuthLayout({ title, subtitle, children }) {
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#7A8B9C', marginBottom: 7 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#6B6B6B', marginBottom: 7 }}>
         {label}
       </label>
       {children}
@@ -347,9 +348,9 @@ function Field({ label, children }) {
 function ErrorBox({ message }) {
   return (
     <div style={{
-      background: 'rgba(255,92,58,0.1)', border: '1px solid rgba(255,92,58,0.25)',
+      background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)',
       borderRadius: 10, padding: '12px 16px', marginBottom: 20,
-      color: '#FF5C3A', fontSize: 14
+      color: '#E11900', fontSize: 14
     }}>⚠️ {message}</div>
   )
 }

@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
+import BottomNav from './components/BottomNav'
 import ProtectedRoute from './components/ProtectedRoute'
 import InstallPrompt from './components/InstallPrompt'
+import Account from './pages/Account'
 import Home from './pages/Home'
 import Services from './pages/Services'
 import Cleaners from './pages/Cleaners'
@@ -30,8 +32,10 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/worker" element={<ProtectedRoute><WorkerDashboard /></ProtectedRoute>} />
           <Route path="/worker/register" element={<ProtectedRoute><WorkerRegister /></ProtectedRoute>} />
+          <Route path="/account" element={<Account />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
+        <BottomNav />
         <InstallPrompt />
       </AuthProvider>
     </BrowserRouter>

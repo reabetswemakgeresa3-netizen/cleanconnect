@@ -4,3 +4,6 @@ dist
 .env.local
 .DS_Store
 *.log
+.netlify
+bundle.js
+page.html

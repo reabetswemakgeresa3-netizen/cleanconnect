@@ -11,7 +11,7 @@ const cleanerIcon = L.divIcon({
     width:44px;height:44px;border-radius:50% 50% 50% 4px;transform:rotate(0deg);
     background:linear-gradient(135deg,#00C896,#00A87E);
     display:flex;align-items:center;justify-content:center;font-size:22px;
-    border:3px solid #0D1117;box-shadow:0 4px 14px rgba(0,200,150,0.5);
+    border:3px solid #FFFFFF;box-shadow:0 4px 14px rgba(0,200,150,0.5);
   ">🧹</div>`,
   iconSize: [44, 44],
   iconAnchor: [22, 40]
@@ -78,11 +78,11 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
 
   if (!position) return (
     <div style={{
-      background: '#1E2530', border: '1px dashed #2E3A4E', borderRadius: 12,
+      background: '#EEEEEE', border: '1px dashed #E8E8E8', borderRadius: 12,
       padding: '28px 20px', textAlign: 'center'
     }}>
       <div style={{ fontSize: 28, marginBottom: 10 }}>📡</div>
-      <p style={{ color: '#7A8B9C', fontSize: 14 }}>
+      <p style={{ color: '#6B6B6B', fontSize: 14 }}>
         Waiting for {cleanerName || 'your cleaner'} to share their live location...
       </p>
     </div>
@@ -90,10 +90,10 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
 
   return (
     <div>
-      <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #2E3A4E' }}>
+      <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #E8E8E8' }}>
         <MapContainer
           center={[position.lat, position.lng]} zoom={15} scrollWheelZoom={false}
-          style={{ height: 260, width: '100%', background: '#1E2530' }}
+          style={{ height: 260, width: '100%', background: '#EEEEEE' }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -105,7 +105,7 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
           <Recenter position={position} />
         </MapContainer>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: '#7A8B9C' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: '#6B6B6B' }}>
         <span style={{
           width: 8, height: 8, borderRadius: '50%', background: '#00C896',
           boxShadow: '0 0 0 3px rgba(0,200,150,0.2)', display: 'inline-block'

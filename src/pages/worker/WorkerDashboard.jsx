@@ -54,11 +54,11 @@ export default function WorkerDashboard() {
   if (loading) return <CenteredNote icon="⏳" text="Loading your jobs..." />
 
   if (!cleaner) return (
-    <div style={{ paddingTop: 68, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0D1117' }}>
+    <div style={{ paddingTop: 68, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
       <div style={{ textAlign: 'center', padding: 24, maxWidth: 440 }}>
         <div style={{ fontSize: 56, marginBottom: 20 }}>🧹</div>
         <h2 style={{ fontSize: 24, marginBottom: 10 }}>You're not registered as a worker yet</h2>
-        <p style={{ color: '#7A8B9C', marginBottom: 28 }}>Join CleanConnect Workers to receive cleaning jobs in your area.</p>
+        <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Join CleanConnect Workers to receive cleaning jobs in your area.</p>
         <Link to="/worker/register" className="btn-primary">Register as a Worker →</Link>
       </div>
     </div>
@@ -77,7 +77,7 @@ export default function WorkerDashboard() {
   }
 
   return (
-    <div style={{ paddingTop: 68, minHeight: '100vh', background: '#0D1117' }}>
+    <div style={{ paddingTop: 68, minHeight: '100vh', background: '#FFFFFF' }}>
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px 80px' }}>
 
         {/* Header */}
@@ -86,15 +86,15 @@ export default function WorkerDashboard() {
             <h1 style={{ fontSize: 30, marginBottom: 6 }}>
               {cleaner.avatar_emoji || '🧹'} Hi, {cleaner.name?.split(' ')[0]}
             </h1>
-            <p style={{ color: '#7A8B9C', fontSize: 15 }}>
+            <p style={{ color: '#6B6B6B', fontSize: 15 }}>
               {cleaner.location}, {cleaner.province} {cleaner.verified && <span style={{ color: '#00C896' }}>· ✓ Verified</span>}
             </p>
           </div>
           <button onClick={toggleAvailable} style={{
             padding: '10px 20px', borderRadius: 100, cursor: 'pointer', fontSize: 14, fontWeight: 500,
-            border: `1.5px solid ${cleaner.available ? '#00C896' : '#2E3A4E'}`,
-            background: cleaner.available ? 'rgba(0,200,150,0.1)' : '#161B22',
-            color: cleaner.available ? '#00C896' : '#7A8B9C', transition: 'all 0.2s'
+            border: `1.5px solid ${cleaner.available ? '#00C896' : '#E8E8E8'}`,
+            background: cleaner.available ? 'rgba(0,200,150,0.1)' : '#F6F6F6',
+            color: cleaner.available ? '#00C896' : '#6B6B6B', transition: 'all 0.2s'
           }}>
             {cleaner.available ? '🟢 Available for jobs' : '⚫ Unavailable'}
           </button>
@@ -103,15 +103,15 @@ export default function WorkerDashboard() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 14, marginBottom: 32 }}>
           {[
-            { label: 'Jobs Today', value: stats.today, icon: '📅', color: '#63B3ED' },
-            { label: 'Active Jobs', value: stats.active, icon: '🔄', color: '#FFA500' },
+            { label: 'Jobs Today', value: stats.today, icon: '📅', color: '#276EF1' },
+            { label: 'Active Jobs', value: stats.active, icon: '🔄', color: '#C46A00' },
             { label: 'Completed', value: stats.completed, icon: '✅', color: '#00C896' },
             { label: 'Total Earned', value: formatCurrency(stats.earned), icon: '💰', color: '#00C896' }
           ].map(s => (
-            <div key={s.label} style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 14, padding: '18px 20px' }}>
+            <div key={s.label} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 14, padding: '18px 20px' }}>
               <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
-              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Syne', color: s.color, marginBottom: 3 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: '#4A5568' }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Inter', color: s.color, marginBottom: 3 }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: '#9E9E9E' }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -129,18 +129,18 @@ export default function WorkerDashboard() {
           ].map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)} style={{
               padding: '8px 18px', borderRadius: 100, fontSize: 14, cursor: 'pointer',
-              border: `1.5px solid ${filter === f.id ? '#00C896' : '#2E3A4E'}`,
+              border: `1.5px solid ${filter === f.id ? '#00C896' : '#E8E8E8'}`,
               background: filter === f.id ? 'rgba(0,200,150,0.1)' : 'transparent',
-              color: filter === f.id ? '#00C896' : '#7A8B9C', transition: 'all 0.2s'
+              color: filter === f.id ? '#00C896' : '#6B6B6B', transition: 'all 0.2s'
             }}>{f.label}</button>
           ))}
         </div>
 
         {/* Jobs */}
         {shown.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 24px', background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16 }}>
+          <div style={{ textAlign: 'center', padding: '60px 24px', background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16 }}>
             <div style={{ fontSize: 44, marginBottom: 14 }}>{filter === 'active' ? '📭' : '📜'}</div>
-            <p style={{ color: '#7A8B9C', fontSize: 16 }}>
+            <p style={{ color: '#6B6B6B', fontSize: 16 }}>
               {filter === 'active' ? 'No active jobs yet — new assignments will appear here.' : 'No completed jobs yet.'}
             </p>
           </div>
@@ -197,28 +197,28 @@ function LocationShareCard({ cleaner }) {
 
   return (
     <div style={{
-      background: sharing ? 'rgba(0,200,150,0.06)' : '#161B22',
-      border: `1px solid ${sharing ? 'rgba(0,200,150,0.3)' : '#2E3A4E'}`,
+      background: sharing ? 'rgba(0,200,150,0.06)' : '#F6F6F6',
+      border: `1px solid ${sharing ? 'rgba(0,200,150,0.3)' : '#E8E8E8'}`,
       borderRadius: 16, padding: '18px 22px', marginBottom: 28,
       display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
     }}>
       <div style={{ fontSize: 28 }}>📡</div>
       <div style={{ flex: 1, minWidth: 200 }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: '#E8EDF4', marginBottom: 3 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: '#000000', marginBottom: 3 }}>
           {sharing ? 'Sharing your live location' : 'Share your live location'}
         </div>
-        <div style={{ fontSize: 13, color: '#7A8B9C' }}>
+        <div style={{ fontSize: 13, color: '#6B6B6B' }}>
           {sharing
             ? 'Your customer can see you approaching on their map.'
             : 'Let your customer track your arrival while a job is in progress.'}
         </div>
-        {error && <div style={{ fontSize: 13, color: '#FF5C3A', marginTop: 6 }}>⚠️ {error}</div>}
+        {error && <div style={{ fontSize: 13, color: '#E11900', marginTop: 6 }}>⚠️ {error}</div>}
       </div>
       <button onClick={sharing ? stop : start} style={{
         padding: '10px 20px', borderRadius: 100, cursor: 'pointer', fontSize: 14, fontWeight: 500,
-        border: `1.5px solid ${sharing ? '#FF5C3A' : '#00C896'}`,
-        background: sharing ? 'rgba(255,92,58,0.1)' : 'rgba(0,200,150,0.1)',
-        color: sharing ? '#FF5C3A' : '#00C896', transition: 'all 0.2s'
+        border: `1.5px solid ${sharing ? '#E11900' : '#00C896'}`,
+        background: sharing ? 'rgba(225,25,0,0.1)' : 'rgba(0,200,150,0.1)',
+        color: sharing ? '#E11900' : '#00C896', transition: 'all 0.2s'
       }}>
         {sharing ? '⏹ Stop Sharing' : '▶️ Start Sharing'}
       </button>
@@ -239,30 +239,30 @@ function JobCard({ job, onStatusChange }) {
     + `&dropoff[formatted_address]=${encodeURIComponent(fullAddress)}`
 
   return (
-    <div style={{ background: '#161B22', border: '1px solid #2E3A4E', borderRadius: 16, padding: '22px 24px' }}>
+    <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: '22px 24px' }}>
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div style={{ width: 52, height: 52, borderRadius: 12, background: '#1E2530', border: '1px solid #2E3A4E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
+        <div style={{ width: 52, height: 52, borderRadius: 12, background: '#EEEEEE', border: '1px solid #E8E8E8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
           {service?.icon || '🧹'}
         </div>
 
         <div style={{ flex: 1, minWidth: 220 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-            <h3 style={{ fontSize: 17, color: '#E8EDF4' }}>{job.service_name}</h3>
+            <h3 style={{ fontSize: 17, color: '#000000' }}>{job.service_name}</h3>
             <span className={`badge ${conf.color}`} style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12 }}>
               {conf.icon} {conf.label}
             </span>
           </div>
-          <div style={{ display: 'grid', gap: 5, fontSize: 13.5, color: '#7A8B9C' }}>
+          <div style={{ display: 'grid', gap: 5, fontSize: 13.5, color: '#6B6B6B' }}>
             <span>📍 {fullAddress}</span>
             <span>📅 {job.booking_date} · ⏰ {job.time_slot} · 📐 {job.sqm} m²</span>
-            <span>👤 {job.contact_name} · <a href={`tel:${job.contact_phone?.replace(/\s/g, '')}`} style={{ color: '#63B3ED' }}>📱 {job.contact_phone}</a></span>
+            <span>👤 {job.contact_name} · <a href={`tel:${job.contact_phone?.replace(/\s/g, '')}`} style={{ color: '#276EF1' }}>📱 {job.contact_phone}</a></span>
             {job.special_instructions && <span style={{ fontStyle: 'italic' }}>📝 "{job.special_instructions}"</span>}
           </div>
         </div>
 
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
-          <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'Syne', color: '#00C896' }}>{formatCurrency(job.amount)}</div>
-          <div style={{ fontSize: 12, color: '#4A5568', fontFamily: 'Syne', marginTop: 3 }}>{job.id}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'Inter', color: '#00C896' }}>{formatCurrency(job.amount)}</div>
+          <div style={{ fontSize: 12, color: '#9E9E9E', fontFamily: 'Inter', marginTop: 3 }}>{job.id}</div>
         </div>
       </div>
 
@@ -275,12 +275,12 @@ function JobCard({ job, onStatusChange }) {
           </button>
         )}
         <a href={uberUrl} target="_blank" rel="noreferrer"
-          style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid #2E3A4E', background: '#1E2530', color: '#E8EDF4', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid #E8E8E8', background: '#EEEEEE', color: '#000000', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           🚗 Uber to Job
         </a>
         <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noreferrer"
-          style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid #2E3A4E', background: '#1E2530', color: '#E8EDF4', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid #E8E8E8', background: '#EEEEEE', color: '#000000', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           🗺️ Directions
         </a>
       </div>
@@ -290,8 +290,8 @@ function JobCard({ job, onStatusChange }) {
 
 function CenteredNote({ icon, text }) {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0D1117', paddingTop: 68 }}>
-      <div style={{ textAlign: 'center', color: '#7A8B9C' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', paddingTop: 68 }}>
+      <div style={{ textAlign: 'center', color: '#6B6B6B' }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>{icon}</div>
         {text}
       </div>

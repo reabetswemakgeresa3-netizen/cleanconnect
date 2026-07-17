@@ -57,7 +57,7 @@ export default function InstallPrompt() {
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999,
-      background: '#161B22', borderTop: '1px solid #2E3A4E',
+      background: '#F6F6F6', borderTop: '1px solid #E8E8E8',
       padding: '16px 20px',
       display: 'flex', alignItems: 'center', gap: 14,
       boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
@@ -75,15 +75,15 @@ export default function InstallPrompt() {
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, color: '#E8EDF4', fontSize: 15, fontFamily: 'Syne' }}>
+        <div style={{ fontWeight: 600, color: '#000000', fontSize: 15, fontFamily: 'Inter' }}>
           Install CleanConnect
         </div>
         {isIOS ? (
-          <div style={{ fontSize: 12, color: '#7A8B9C', marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>
             Tap <strong style={{ color: '#00C896' }}>Share</strong> then <strong style={{ color: '#00C896' }}>"Add to Home Screen"</strong>
           </div>
         ) : (
-          <div style={{ fontSize: 12, color: '#7A8B9C', marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 2 }}>
             Add to your home screen — works like a real app
           </div>
         )}
@@ -92,15 +92,15 @@ export default function InstallPrompt() {
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
         <button onClick={handleDismiss} style={{
-          background: 'transparent', border: '1px solid #2E3A4E',
-          color: '#7A8B9C', padding: '8px 14px', borderRadius: 8,
+          background: 'transparent', border: '1px solid #E8E8E8',
+          color: '#6B6B6B', padding: '8px 14px', borderRadius: 8,
           fontSize: 13, cursor: 'pointer'
         }}>Later</button>
 
         {!isIOS && (
           <button onClick={handleInstall} style={{
             background: '#00C896', border: 'none',
-            color: '#0D1117', padding: '8px 16px', borderRadius: 8,
+            color: '#FFFFFF', padding: '8px 16px', borderRadius: 8,
             fontSize: 13, fontWeight: 600, cursor: 'pointer'
           }}>Install</button>
         )}

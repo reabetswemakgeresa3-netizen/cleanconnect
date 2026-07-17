@@ -15,19 +15,21 @@ export default function Navbar() {
   return (
     <nav style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      background: 'rgba(13,17,23,0.88)', backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(46,58,78,0.6)',
-      padding: '0 24px', height: 68,
+      background: '#FFFFFF',
+      borderBottom: '1px solid #EEEEEE',
+      padding: '0 24px', height: 64,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between'
     }}>
       {/* Logo */}
       <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>✦</div>
-        <span style={{ fontFamily: 'Syne', fontSize: 20, fontWeight: 800 }}>Clean<span style={{ color: '#00C896' }}>Connect</span></span>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: '#00C896', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, color: '#FFFFFF' }}>✦</div>
+        <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', color: '#000000' }}>
+          Clean<span style={{ color: '#00C896' }}>Connect</span>
+        </span>
       </Link>
 
-      {/* Nav links */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+      {/* Nav links — desktop only; bottom nav covers mobile */}
+      <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <NavLink to="/services" active={isActive('/services')}>Services</NavLink>
         <NavLink to="/cleaners" active={isActive('/cleaners')}>Our Cleaners</NavLink>
         {user && <NavLink to="/book" active={isActive('/book')}>Book Now</NavLink>}
@@ -39,27 +41,25 @@ export default function Navbar() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {user ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 100, background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.2)' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#0D1117' }}>
-                {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+            <Link to="/account" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px 6px 6px', borderRadius: 100, background: '#F6F6F6' }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#00C896', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#FFFFFF' }}>
+                {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '👤'}
               </div>
-              <span style={{ fontSize: 14, color: '#E8EDF4', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user.user_metadata?.full_name || user.email}
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#000000', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user.user_metadata?.full_name || user.email || 'Account'}
               </span>
-            </div>
-            <button onClick={handleSignOut}
-              style={{ background: 'transparent', border: '1px solid #2E3A4E', color: '#7A8B9C', padding: '8px 16px', borderRadius: 8, fontSize: 14, cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.target.style.borderColor = '#FF5C3A'; e.target.style.color = '#FF5C3A' }}
-              onMouseLeave={e => { e.target.style.borderColor = '#2E3A4E'; e.target.style.color = '#7A8B9C' }}>
+            </Link>
+            <button onClick={handleSignOut} className="hide-mobile"
+              style={{ background: 'transparent', border: '1px solid #E8E8E8', color: '#6B6B6B', padding: '8px 16px', borderRadius: 100, fontSize: 14, cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.target.style.borderColor = '#000000'; e.target.style.color = '#000000' }}
+              onMouseLeave={e => { e.target.style.borderColor = '#E8E8E8'; e.target.style.color = '#6B6B6B' }}>
               Sign Out
             </button>
           </div>
         ) : (
           <>
-            <Link to="/login" style={{ color: '#7A8B9C', fontSize: 15, padding: '8px 16px', borderRadius: 8 }}
-              onMouseEnter={e => e.target.style.color = '#E8EDF4'}
-              onMouseLeave={e => e.target.style.color = '#7A8B9C'}>Sign In</Link>
-            <Link to="/signup" className="btn-primary" style={{ padding: '10px 20px', fontSize: 14 }}>Get Started</Link>
+            <Link to="/login" style={{ color: '#000000', fontSize: 15, fontWeight: 600, padding: '8px 12px', borderRadius: 100, whiteSpace: 'nowrap' }}>Sign In</Link>
+            <Link to="/signup" className="btn-primary" style={{ padding: '10px 18px', fontSize: 14, borderRadius: 100, whiteSpace: 'nowrap' }}>Get Started</Link>
           </>
         )}
       </div>
@@ -70,10 +70,9 @@ export default function Navbar() {
 function NavLink({ to, children, active }) {
   return (
     <Link to={to} style={{
-      color: active ? '#00C896' : '#7A8B9C', fontSize: 14, padding: '7px 12px',
-      borderRadius: 8, fontWeight: active ? 500 : 400, transition: 'color 0.2s',
-      background: active ? 'rgba(0,200,150,0.1)' : 'transparent',
-      border: active ? '1px solid rgba(0,200,150,0.2)' : '1px solid transparent'
+      color: active ? '#000000' : '#6B6B6B', fontSize: 14, padding: '8px 14px',
+      borderRadius: 100, fontWeight: active ? 700 : 500, transition: 'all 0.2s',
+      background: active ? '#F6F6F6' : 'transparent'
     }}>{children}</Link>
   )
 }
