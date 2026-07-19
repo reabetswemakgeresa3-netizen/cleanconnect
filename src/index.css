@@ -163,6 +163,27 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
   .hide-mobile { display: none !important; }
 }
 
+/* Uber-style home screen: fixed-height column with the map as hero */
+.home-screen {
+  height: calc(100vh - var(--sat));
+  height: calc(100dvh - var(--sat));
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+}
+@media (max-width: 768px) {
+  .home-screen {
+    height: calc(100vh - var(--sat) - 74px - var(--sab));
+    height: calc(100dvh - var(--sat) - 74px - var(--sab));
+  }
+}
+/* Light grayscale map tiles to match the clean Uber look */
+.home-map .leaflet-tile-pane { filter: grayscale(1) contrast(0.92) brightness(1.06); }
+.home-map .leaflet-control-attribution { font-size: 9px; opacity: 0.55; }
+
 /* Booking flow: CTA pinned to bottom on mobile, above the bottom nav */
 .book-cta-bar {
   position: sticky;

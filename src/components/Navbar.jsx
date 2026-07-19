@@ -1,11 +1,15 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Logo from './Logo'
 
 export default function Navbar() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const isActive = (path) => location.pathname === path
+
+  // The home screen renders its own Uber-style top bar
+  if (location.pathname === '/') return null
 
   const handleSignOut = async () => {
     await signOut()
@@ -23,9 +27,9 @@ export default function Navbar() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between'
     }}>
       {/* Logo */}
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: '#00C896', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, color: '#FFFFFF' }}>✦</div>
-        <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', color: '#000000' }}>
+      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Logo variant="mark" size={32} />
+        <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', color: '#0D1117' }}>
           Clean<span style={{ color: '#00C896' }}>Connect</span>
         </span>
       </Link>

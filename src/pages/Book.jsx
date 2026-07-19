@@ -17,7 +17,8 @@ export default function Book() {
 
   const [form, setForm] = useState({
     serviceId: searchParams.get('service') || '',
-    sqm: 50, address: '', city: '', province: 'Gauteng',
+    sqm: Math.max(10, Number(searchParams.get('sqm')) || 50),
+    address: '', city: '', province: 'Gauteng',
     specialInstructions: '', date: '', timeSlot: '',
     contactName: user?.user_metadata?.full_name || '',
     contactPhone: user?.user_metadata?.phone || '',
