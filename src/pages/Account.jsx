@@ -1,12 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { formatSAPhone } from '../lib/phone'
+import { Icon } from '../components/Icons'
 
 const ROWS = [
-  { to: '/dashboard', icon: '📋', label: 'My Bookings', sub: 'Track and manage your cleans' },
-  { to: '/book', icon: '🧹', label: 'Book a Clean', sub: 'Start a new booking' },
-  { to: '/cleaners', icon: '⭐', label: 'Our Cleaners', sub: 'Browse vetted professionals' },
-  { to: '/worker', icon: '💼', label: 'Worker Portal', sub: 'Earn with CleanConnect' },
+  { to: '/dashboard', icon: 'clipboard', label: 'My Bookings', sub: 'Track and manage your cleans' },
+  { to: '/book', icon: 'bucket', label: 'Book a Clean', sub: 'Start a new booking' },
+  { to: '/cleaners', icon: 'star', label: 'Our Cleaners', sub: 'Browse vetted professionals' },
+  { to: '/worker', icon: 'briefcase', label: 'Worker Portal', sub: 'Earn with CleanConnect' },
 ]
 
 export default function Account() {
@@ -56,8 +57,8 @@ export default function Account() {
               display: 'flex', alignItems: 'center', gap: 16, padding: '18px 4px',
               borderBottom: '1px solid #F0F0F0', transition: 'background 0.15s'
             }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#F6F6F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                {row.icon}
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#F6F6F6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon name={row.icon} size={20} color="#0D1117" />
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 16, fontWeight: 600, color: '#000000' }}>{row.label}</div>

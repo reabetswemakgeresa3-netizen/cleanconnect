@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import Logo from '../components/Logo'
+import { Icon, ServiceBadge } from '../components/Icons'
 import { SERVICES, STATUS_CONFIG, formatCurrency } from '../data/services'
 
 const ADMIN_PIN = import.meta.env.VITE_ADMIN_PIN || 'cleanconnect2025'
@@ -122,13 +124,13 @@ export default function Admin() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 40px', background: '#FFFFFF' }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 16px' }}>🔐</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><Logo variant="tile" size={64} /></div>
             <h1 style={{ fontSize: 28, marginBottom: 8 }}>Admin Dashboard</h1>
             <p style={{ color: '#6B6B6B' }}>CleanConnect Operations Centre</p>
           </div>
           <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', borderRadius: 20, padding: 36, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)' }}>
             <form onSubmit={handlePinSubmit}>
-              {pinError && <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#E11900', fontSize: 14 }}>⚠️ {pinError}</div>}
+              {pinError && <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#E11900', fontSize: 14 }}>{pinError}</div>}
               <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 8 }}>Admin PIN</label>
               <input className="input-field" type="password" placeholder="Enter PIN" value={pin} onChange={e => setPin(e.target.value)} style={{ marginBottom: 16 }} autoFocus />
               <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 14 }}>Access Dashboard →</button>
@@ -151,19 +153,19 @@ export default function Admin() {
             <p style={{ color: '#6B6B6B', fontSize: 14 }}>CleanConnect Operations Centre · {bookings.length} total bookings</p>
           </div>
           <button onClick={fetchBookings} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', color: '#6B6B6B', padding: '10px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-            🔄 Refresh Data
+            Refresh Data
           </button>
         </div>
 
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 14, marginBottom: 32 }}>
           {[
-            { label: 'Total Bookings', value: stats.total, icon: '📋', color: '#000000' },
-            { label: 'Total Revenue', value: formatCurrency(stats.revenue), icon: '💰', color: '#00C896' },
-            { label: 'This Week', value: stats.thisWeek, icon: '📅', color: '#276EF1' },
+            { label: 'Total Bookings', value: stats.total, icon: 'clipboard', color: '#000000' },
+            { label: 'Total Revenue', value: formatCurrency(stats.revenue), icon: 'wallet', color: '#00C896' },
+            { label: 'This Week', value: stats.thisWeek, icon: 'calendar', color: '#276EF1' },
             { label: 'Pending', value: stats.pending, icon: '⏳', color: '#C46A00' },
-            { label: 'Completed', value: stats.completed, icon: '✅', color: '#00C896' },
-            { label: 'Unassigned', value: stats.unassigned, icon: '⚠️', color: stats.unassigned > 0 ? '#E11900' : '#6B6B6B' },
+            { label: 'Completed', value: stats.completed, icon: 'checkCircle', color: '#00C896' },
+            { label: 'Unassigned', value: stats.unassigned, icon: 'info', color: stats.unassigned > 0 ? '#E11900' : '#6B6B6B' },
           ].map(s => (
             <div key={s.label} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 14, padding: '18px 20px' }}>
               <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
@@ -176,10 +178,10 @@ export default function Admin() {
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 12, padding: 4, width: 'fit-content' }}>
           {[
-            { id: 'customers', label: '👥 Customers', count: customers.length },
-            { id: 'bookings', label: '📋 All Bookings', count: bookings.length },
-            { id: 'unassigned', label: '⚠️ Unassigned', count: stats.unassigned },
-            { id: 'stats', label: '📊 Revenue Stats' },
+            { id: 'customers', label: 'Customers', count: customers.length },
+            { id: 'bookings', label: 'All Bookings', count: bookings.length },
+            { id: 'unassigned', label: 'Unassigned', count: stats.unassigned },
+            { id: 'stats', label: 'Revenue Stats' },
           ].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
               padding: '10px 18px', borderRadius: 9, border: 'none', cursor: 'pointer',
@@ -200,7 +202,7 @@ export default function Admin() {
         {activeTab === 'customers' && (
           <div>
             <div style={{ marginBottom: 20 }}>
-              <input className="input-field" placeholder="🔍  Search by name, phone, city..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 400 }} />
+              <input className="input-field" placeholder="Search by name, phone, city..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 400 }} />
             </div>
             <div style={{ display: 'grid', gap: 14 }}>
               {customers.filter(c =>
@@ -212,7 +214,7 @@ export default function Admin() {
                   onViewBooking={b => { setSelectedBooking(b); setActiveTab('bookings') }}
                 />
               ))}
-              {customers.length === 0 && <EmptyState icon="👥" message="No customers yet" />}
+              {customers.length === 0 && <EmptyState icon="users" message="No customers yet" />}
             </div>
           </div>
         )}
@@ -222,14 +224,14 @@ export default function Admin() {
           <div>
             {/* Filters row */}
             <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
-              <input className="input-field" placeholder="🔍  Search name, phone, city, ID..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, minWidth: 220, maxWidth: 340 }} />
+              <input className="input-field" placeholder="Search name, phone, city, ID..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, minWidth: 220, maxWidth: 340 }} />
               <select className="input-field" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ width: 'auto', cursor: 'pointer' }}>
                 <option value="all">All Statuses</option>
-                <option value="pending">⏳ Pending</option>
-                <option value="confirmed">✅ Confirmed</option>
-                <option value="in-progress">🔄 In Progress</option>
-                <option value="completed">✓ Completed</option>
-                <option value="cancelled">✕ Cancelled</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
               <select className="input-field" value={serviceFilter} onChange={e => setServiceFilter(e.target.value)} style={{ width: 'auto', cursor: 'pointer' }}>
                 <option value="all">All Services</option>
@@ -251,7 +253,7 @@ export default function Admin() {
             {loading ? (
               <LoadingState />
             ) : filtered.length === 0 ? (
-              <EmptyState icon="📋" message="No bookings match your filters" />
+              <EmptyState icon="clipboard" message="No bookings match your filters" />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {filtered.map(booking => (
@@ -274,7 +276,7 @@ export default function Admin() {
           <div>
             {stats.unassigned === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px', background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16 }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+                <div style={{ marginBottom: 16 }}><Icon name="checkCircle" size={44} color="#00C896" /></div>
                 <h3 style={{ fontSize: 20, marginBottom: 8 }}>All bookings assigned!</h3>
                 <p style={{ color: '#6B6B6B' }}>Every active booking has a cleaner assigned.</p>
               </div>
@@ -339,8 +341,8 @@ function CustomerRow({ customer, onViewBooking }) {
         <div style={{ flex: 1, minWidth: 160 }}>
           <div style={{ fontWeight: 600, color: '#000000', fontSize: 16, marginBottom: 3 }}>{customer.name}</div>
           <div style={{ fontSize: 13, color: '#6B6B6B', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <span>📱 {customer.phone}</span>
-            <span>📍 {lastBooking?.city}, {lastBooking?.province}</span>
+            <span>{customer.phone}</span>
+            <span>{lastBooking?.city}, {lastBooking?.province}</span>
           </div>
         </div>
 
@@ -373,7 +375,6 @@ function CustomerRow({ customer, onViewBooking }) {
             Booking History
           </div>
           {customer.bookings.map(booking => {
-            const service = SERVICES.find(s => s.id === booking.service_id)
             const conf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
             return (
               <div
@@ -383,7 +384,7 @@ function CustomerRow({ customer, onViewBooking }) {
                 onMouseEnter={e => e.currentTarget.style.background = '#F2F2F2'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <span style={{ fontSize: 22, flexShrink: 0 }}>{service?.icon || '🧹'}</span>
+                <ServiceBadge id={booking.service_id} size={36} iconSize={18} />
                 <div style={{ flex: 1, minWidth: 160 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, color: '#000000', marginBottom: 2 }}>{booking.service_name}</div>
                   <div style={{ fontSize: 12, color: '#6B6B6B' }}>
@@ -406,7 +407,6 @@ function CustomerRow({ customer, onViewBooking }) {
 
 // ── BOOKING ROW ───────────────────────────────────────────
 function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleaners, highlight }) {
-  const service = SERVICES.find(s => s.id === booking.service_id)
   const conf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
 
   return (
@@ -418,24 +418,24 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
       transition: 'all 0.2s'
     }}>
       {/* Service icon */}
-      <span style={{ fontSize: 28, flexShrink: 0 }}>{service?.icon || '🧹'}</span>
+      <ServiceBadge id={booking.service_id} size={44} iconSize={22} />
 
       {/* Customer + service info */}
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 700, color: '#000000', fontSize: 15 }}>{booking.contact_name}</span>
           <span style={{ fontSize: 12, color: '#6B6B6B' }}>·</span>
-          <span style={{ fontSize: 13, color: '#6B6B6B' }}>📱 {booking.contact_phone}</span>
+          <span style={{ fontSize: 13, color: '#6B6B6B' }}>{booking.contact_phone}</span>
         </div>
         <div style={{ fontSize: 13, color: '#6B6B6B', marginBottom: 3 }}>
-          {service?.icon} {booking.service_name} · <strong style={{ color: '#000000' }}>{booking.sqm}m²</strong>
+          {booking.service_name} · <strong style={{ color: '#000000' }}>{booking.sqm}m²</strong>
         </div>
         <div style={{ fontSize: 12, color: '#9E9E9E' }}>
-          📍 {booking.address}, {booking.city} · 📅 {booking.booking_date} · ⏰ {booking.time_slot}
+          {booking.address}, {booking.city} · {booking.booking_date} · {booking.time_slot}
         </div>
         {booking.special_instructions && (
           <div style={{ fontSize: 12, color: '#6B6B6B', marginTop: 4, fontStyle: 'italic' }}>
-            📝 "{booking.special_instructions}"
+            "{booking.special_instructions}"
           </div>
         )}
       </div>
@@ -445,18 +445,18 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
         {/* Assign cleaner */}
         <select value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} onClick={e => e.stopPropagation()}
           style={{ background: booking.cleaner_assigned ? '#EEEEEE' : 'rgba(225,25,0,0.08)', border: `1px solid ${booking.cleaner_assigned ? '#E8E8E8' : '#E11900'}`, borderRadius: 8, padding: '7px 10px', color: booking.cleaner_assigned ? '#000000' : '#E11900', fontSize: 12, cursor: 'pointer' }}>
-          <option value="">⚠️ Assign cleaner...</option>
+          <option value="">Assign cleaner...</option>
           {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
         </select>
 
         {/* Status */}
         <select value={booking.status} onChange={e => onStatusChange(e.target.value)} onClick={e => e.stopPropagation()}
           style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', borderRadius: 8, padding: '7px 10px', color: '#000000', fontSize: 12, cursor: 'pointer' }}>
-          <option value="pending">⏳ Pending</option>
-          <option value="confirmed">✅ Confirmed</option>
-          <option value="in-progress">🔄 In Progress</option>
-          <option value="completed">✓ Completed</option>
-          <option value="cancelled">✕ Cancelled</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
 
@@ -465,7 +465,7 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
         <div style={{ textAlign: 'right' }}>
           <div style={{ color: '#00C896', fontWeight: 800, fontFamily: 'Inter', fontSize: 17 }}>{formatCurrency(booking.amount)}</div>
           <div style={{ fontSize: 11, color: booking.payment_status === 'paid' ? '#00C896' : '#C46A00' }}>
-            {booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? '↩ Refunded' : '⏳ Unpaid'}
+            {booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? 'Refunded' : '⏳ Unpaid'}
           </div>
         </div>
         <button onClick={onSelect} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>
@@ -478,7 +478,6 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
 
 // ── BOOKING DETAIL MODAL ──────────────────────────────────
 function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, cleaners }) {
-  const service = SERVICES.find(s => s.id === booking.service_id)
   const conf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
 
   const progressSteps = [
@@ -497,7 +496,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-              <span style={{ fontSize: 28 }}>{service?.icon || '🧹'}</span>
+              <ServiceBadge id={booking.service_id} size={40} iconSize={20} />
               <h2 style={{ fontSize: 22 }}>{booking.service_name}</h2>
             </div>
             <span className={`badge ${conf.color}`}>{conf.icon} {conf.label}</span>
@@ -521,7 +520,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
               </div>
               <div>
                 <div style={{ fontWeight: 600, color: '#000000', fontSize: 15 }}>{booking.contact_name}</div>
-                <div style={{ fontSize: 13, color: '#6B6B6B' }}>📱 {booking.contact_phone}</div>
+                <div style={{ fontSize: 13, color: '#6B6B6B' }}>{booking.contact_phone}</div>
               </div>
             </div>
           </div>
@@ -530,15 +529,15 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
         {/* Details grid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 20, background: '#F2F2F2', borderRadius: 12, overflow: 'hidden' }}>
           {[
-            { label: '📐 Service Area', value: `${booking.sqm} m²` },
-            { label: '📍 Address', value: booking.address },
-            { label: '🌍 City & Province', value: `${booking.city}, ${booking.province}` },
-            { label: '📅 Service Date', value: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
+            { label: 'Service Area', value: `${booking.sqm} m²` },
+            { label: 'Address', value: booking.address },
+            { label: 'City & Province', value: `${booking.city}, ${booking.province}` },
+            { label: 'Service Date', value: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
             { label: '⏰ Time Window', value: booking.time_slot },
-            { label: '💰 Amount', value: formatCurrency(booking.amount) },
-            { label: '💳 Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? '↩ Refunded' : '⏳ Unpaid' },
-            ...(booking.special_instructions ? [{ label: '📝 Notes', value: booking.special_instructions }] : []),
-            { label: '🕐 Booked On', value: new Date(booking.created_at).toLocaleString('en-ZA') },
+            { label: 'Amount', value: formatCurrency(booking.amount) },
+            { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? 'Refunded' : '⏳ Unpaid' },
+            ...(booking.special_instructions ? [{ label: 'Notes', value: booking.special_instructions }] : []),
+            { label: 'Booked On', value: new Date(booking.created_at).toLocaleString('en-ZA') },
           ].map((row, i) => (
             <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 16px', borderBottom: i < 8 ? '1px solid #EEEEEE' : 'none', gap: 16 }}>
               <span style={{ color: '#6B6B6B', fontSize: 13, flexShrink: 0 }}>{row.label}</span>
@@ -549,7 +548,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
 
         {/* Assign cleaner */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 8, fontWeight: 500 }}>👤 Assign Cleaner</label>
+          <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 8, fontWeight: 500 }}>Assign Cleaner</label>
           <select className="input-field" value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} style={{ cursor: 'pointer' }}>
             <option value="">Select a cleaner...</option>
             {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
@@ -561,7 +560,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
 
         {/* Update status */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 10, fontWeight: 500 }}>📌 Update Status</label>
+          <label style={{ display: 'block', fontSize: 13, color: '#6B6B6B', marginBottom: 10, fontWeight: 500 }}>Update Status</label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
             {['pending','confirmed','in-progress','completed','cancelled'].map(s => {
               const c = STATUS_CONFIG[s] || STATUS_CONFIG.pending
@@ -619,7 +618,7 @@ function RevenueStats({ bookings }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px,1fr))', gap: 20 }}>
       {/* Revenue by service */}
       <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24 }}>
-        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>💰 Revenue by Service</h3>
+        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>Revenue by Service</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {byService.map(s => (
             <div key={s.id}>
@@ -640,12 +639,12 @@ function RevenueStats({ bookings }) {
 
       {/* Revenue by province */}
       <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24 }}>
-        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>🌍 Revenue by Province</h3>
+        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>Revenue by Province</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {byProvince.map(([province, data]) => (
             <div key={province}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: '#6B6B6B' }}>📍 {province}</span>
+                <span style={{ fontSize: 13, color: '#6B6B6B' }}>{province}</span>
                 <div style={{ textAlign: 'right' }}>
                   <span style={{ fontSize: 13, color: '#000000', fontWeight: 600 }}>{formatCurrency(data.revenue)}</span>
                   <span style={{ fontSize: 11, color: '#9E9E9E', marginLeft: 8 }}>{data.count} bookings</span>
@@ -661,14 +660,13 @@ function RevenueStats({ bookings }) {
 
       {/* Recent activity */}
       <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24, gridColumn: 'span 2' }}>
-        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>🕐 Recent Bookings</h3>
+        <h3 style={{ fontSize: 15, marginBottom: 20, color: '#6B6B6B', fontFamily: 'DM Sans' }}>Recent Bookings</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0, borderRadius: 10, overflow: 'hidden' }}>
           {bookings.slice(0, 8).map((b, i) => {
-            const service = SERVICES.find(s => s.id === b.service_id)
             const conf = STATUS_CONFIG[b.status] || STATUS_CONFIG.pending
             return (
               <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', background: i % 2 === 0 ? '#F2F2F2' : 'transparent', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 20 }}>{service?.icon || '🧹'}</span>
+                <ServiceBadge id={b.service_id} size={32} iconSize={16} />
                 <div style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontSize: 14, fontWeight: 500, color: '#000000' }}>{b.contact_name}</div>
                   <div style={{ fontSize: 12, color: '#9E9E9E' }}>{b.service_name} · {b.city}</div>

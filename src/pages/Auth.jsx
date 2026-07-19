@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Logo from '../components/Logo'
+import { Icon } from '../components/Icons'
 import { normalizeSAPhone } from '../lib/phone'
 
 export function Login() {
@@ -109,7 +111,7 @@ function MethodToggle({ method, onChange }) {
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 24,
       background: '#FFFFFF', border: '1px solid #E8E8E8', borderRadius: 12, padding: 4
     }}>
-      {[{ id: 'email', label: '✉️ Email' }, { id: 'phone', label: '📱 Phone OTP' }].map(m => (
+      {[{ id: 'email', label: 'Email' }, { id: 'phone', label: 'Phone OTP' }].map(m => (
         <button key={m.id} type="button" onClick={() => onChange(m.id)} style={{
           padding: '10px 8px', borderRadius: 9, border: 'none', cursor: 'pointer',
           background: method === m.id ? '#00C896' : 'transparent',
@@ -230,9 +232,9 @@ export function Signup() {
     }
   }
 
-  if (success) return <AuthLayout title="Account Created! 🎉" subtitle="Check your email to confirm your account">
+  if (success) return <AuthLayout title="Account Created!" subtitle="Check your email to confirm your account">
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
-      <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}><Icon name="checkCircle" size={56} color="#00C896" /></div>
       <p style={{ color: '#6B6B6B', lineHeight: 1.6, marginBottom: 24 }}>
         We sent a confirmation email to <strong style={{ color: '#000000' }}>{form.email}</strong>.<br />
         Click the link to activate your account.
@@ -310,11 +312,7 @@ function AuthLayout({ title, subtitle, children }) {
       }} />
       <div style={{ width: '100%', maxWidth: 460, position: 'relative' }}>
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36, justifyContent: 'center' }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg,#00C896,#00A87E)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18
-          }}>✦</div>
+          <Logo variant="tile" size={36} />
           <span style={{ fontFamily: 'Inter', fontSize: 20, fontWeight: 800 }}>
             Clean<span style={{ color: '#00C896' }}>Connect</span>
           </span>
@@ -351,6 +349,6 @@ function ErrorBox({ message }) {
       background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)',
       borderRadius: 10, padding: '12px 16px', marginBottom: 20,
       color: '#E11900', fontSize: 14
-    }}>⚠️ {message}</div>
+    }}>{message}</div>
   )
 }

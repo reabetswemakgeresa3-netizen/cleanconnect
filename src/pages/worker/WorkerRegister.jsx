@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { SERVICES, PROVINCES } from '../../data/services'
+import Logo from '../../components/Logo'
+import { Icon } from '../../components/Icons'
 
 const LANGUAGES = ['English', 'isiZulu', 'isiXhosa', 'Afrikaans', 'Sepedi', 'Setswana', 'Sesotho', 'Xitsonga', 'siSwati', 'Tshivenda', 'isiNdebele']
 
@@ -89,7 +91,7 @@ export default function WorkerRegister() {
     <div style={{ paddingTop: 68, minHeight: '100vh', background: '#FFFFFF' }}>
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, margin: '0 auto 16px' }}>🧹</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><Logo variant="tile" size={64} /></div>
           <h1 style={{ fontSize: 30, marginBottom: 8 }}>Become a CleanConnect Worker</h1>
           <p style={{ color: '#6B6B6B' }}>Register once, get assigned jobs, earn on your schedule</p>
         </div>
@@ -97,7 +99,7 @@ export default function WorkerRegister() {
         <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', borderRadius: 20, padding: 36, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)' }}>
           <form onSubmit={handleSubmit}>
             {error && (
-              <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, color: '#E11900', fontSize: 14 }}>⚠️ {error}</div>
+              <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, color: '#E11900', fontSize: 14 }}>{error}</div>
             )}
 
             <Field label="Profile photo (optional)">
@@ -109,7 +111,7 @@ export default function WorkerRegister() {
                 }}>
                   {photoPreview
                     ? <img src={photoPreview} alt="Your profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : '📷'}
+                    : <Icon name="camera" size={26} color="#9E9E9E" />}
                 </div>
                 <div>
                   <label className="btn-outline" style={{ cursor: 'pointer', display: 'inline-block', padding: '10px 18px', fontSize: 14 }}>
@@ -144,7 +146,7 @@ export default function WorkerRegister() {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {SERVICES.map(s => (
                   <Chip key={s.id} active={specialties.includes(s.name)} onClick={() => toggle(specialties, setSpecialties, s.name)}>
-                    {s.icon} {s.name}
+                    {s.name}
                   </Chip>
                 ))}
               </div>

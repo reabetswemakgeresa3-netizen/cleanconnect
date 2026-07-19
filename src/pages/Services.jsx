@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { SERVICES, formatCurrency, calculatePrice } from '../data/services'
+import { Icon, ServiceBadge } from '../components/Icons'
 
 export default function Services() {
   const { user } = useAuth()
@@ -27,7 +28,7 @@ export default function Services() {
           borderRadius: 12, padding: '14px 20px',
           display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap'
         }}>
-          <span style={{ fontSize: 20 }}>💡</span>
+          <Icon name="tag" size={20} color="#00C896" />
           <div>
             <span style={{ color: '#00C896', fontWeight: 500 }}>Volume Discounts: </span>
             <span style={{ color: '#6B6B6B', fontSize: 14 }}>
@@ -73,9 +74,7 @@ function ServiceDetailCard({ service, onBook, hovered, onHover, onLeave }) {
       onMouseLeave={onLeave}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div>
-          <span style={{ fontSize: 40 }}>{service.icon}</span>
-        </div>
+        <ServiceBadge id={service.id} size={56} iconSize={28} />
         <div style={{ textAlign: 'right' }}>
           <div style={{ color: '#00C896', fontWeight: 700, fontSize: 20 }}>R{service.pricePerSqm}/m²</div>
           <div style={{ color: '#9E9E9E', fontSize: 12, marginTop: 2 }}>our rate</div>
@@ -92,7 +91,7 @@ function ServiceDetailCard({ service, onBook, hovered, onHover, onLeave }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           {service.includes.map(item => (
             <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#6B6B6B' }}>
-              <span style={{ color: '#00C896', fontSize: 10 }}>✓</span> {item}
+              <Icon name="check" size={13} color="#00C896" strokeWidth={3} /> {item}
             </div>
           ))}
         </div>
@@ -128,7 +127,9 @@ function ServiceDetailCard({ service, onBook, hovered, onHover, onLeave }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: 13, color: '#9E9E9E' }}>⏱ {service.duration}</span>
+        <span style={{ fontSize: 13, color: '#9E9E9E', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Icon name="clock" size={14} color="#9E9E9E" /> {service.duration}
+        </span>
         <button onClick={onBook} className="btn-primary" style={{ padding: '10px 22px', fontSize: 14 }}>
           Book Now →
         </button>

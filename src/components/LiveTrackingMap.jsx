@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { supabase } from '../lib/supabase'
+import { Icon } from './Icons'
 
 // Emoji marker avoids Leaflet's bundler-broken default icon assets
 const cleanerIcon = L.divIcon({
@@ -10,9 +11,9 @@ const cleanerIcon = L.divIcon({
   html: `<div style="
     width:44px;height:44px;border-radius:50% 50% 50% 4px;transform:rotate(0deg);
     background:linear-gradient(135deg,#00C896,#00A87E);
-    display:flex;align-items:center;justify-content:center;font-size:22px;
+    display:flex;align-items:center;justify-content:center;
     border:3px solid #FFFFFF;box-shadow:0 4px 14px rgba(0,200,150,0.5);
-  ">🧹</div>`,
+  "><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><path d="M5 8.5h14l-1.7 10.6a2 2 0 0 1-2 1.7H8.7a2 2 0 0 1-2-1.7Z"/><path d="M7.5 8.5a4.5 4.5 0 0 1 9 0"/></svg></div>`,
   iconSize: [44, 44],
   iconAnchor: [22, 40]
 })
@@ -81,7 +82,7 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
       background: '#EEEEEE', border: '1px dashed #E8E8E8', borderRadius: 12,
       padding: '28px 20px', textAlign: 'center'
     }}>
-      <div style={{ fontSize: 28, marginBottom: 10 }}>📡</div>
+      <div style={{ marginBottom: 10 }}><Icon name="radio" size={26} color="#9E9E9E" /></div>
       <p style={{ color: '#6B6B6B', fontSize: 14 }}>
         Waiting for {cleanerName || 'your cleaner'} to share their live location...
       </p>

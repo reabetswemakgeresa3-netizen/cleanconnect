@@ -1,84 +1,126 @@
+import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Logo from './Logo'
+import { Icon } from './Icons'
 
+// One header for every page: hamburger menu · centered logo · notification bell.
 export default function Navbar() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const isActive = (path) => location.pathname === path
-
-  // The home screen renders its own Uber-style top bar
-  if (location.pathname === '/') return null
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const handleSignOut = async () => {
     await signOut()
+    setMenuOpen(false)
     navigate('/')
   }
 
+  const MENU = [
+    { to: '/services', label: 'Services', icon: 'bucket' },
+    { to: '/cleaners', label: 'Our Cleaners', icon: 'star' },
+    { to: user ? '/book' : '/signup', label: 'Book a Clean', icon: 'calendar' },
+    { to: '/dashboard', label: 'My Bookings', icon: 'clipboard' },
+    { to: '/worker', label: 'Worker Portal', icon: 'briefcase' },
+    { to: '/account', label: 'Account', icon: 'user' }
+  ]
+
   return (
-    <nav style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      background: '#FFFFFF',
-      borderBottom: '1px solid #EEEEEE',
-      // White bar bleeds into the notch/status-bar area; content sits below it
-      padding: 'var(--sat) calc(24px + var(--sar)) 0 calc(24px + var(--sal))',
-      height: 'calc(64px + var(--sat))',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-    }}>
-      {/* Logo */}
-      <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Logo variant="mark" size={32} />
-        <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', color: '#0D1117' }}>
-          Clean<span style={{ color: '#00C896' }}>Connect</span>
-        </span>
-      </Link>
+    <>
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        background: '#FFFFFF',
+        borderBottom: '1px solid #F0F0F0',
+        // White bar bleeds into the notch/status-bar area; content sits below it
+        padding: 'var(--sat) calc(16px + var(--sar)) 0 calc(16px + var(--sal))',
+        height: 'calc(64px + var(--sat))',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+      }}>
+        <button onClick={() => setMenuOpen(true)} aria-label="Menu" style={iconBtn}>
+          <Icon name="menu" size={22} color="#0D1117" strokeWidth={2.2} />
+        </button>
 
-      {/* Nav links — desktop only; bottom nav covers mobile */}
-      <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <NavLink to="/services" active={isActive('/services')}>Services</NavLink>
-        <NavLink to="/cleaners" active={isActive('/cleaners')}>Our Cleaners</NavLink>
-        {user && <NavLink to="/book" active={isActive('/book')}>Book Now</NavLink>}
-        {user && <NavLink to="/dashboard" active={isActive('/dashboard')}>My Bookings</NavLink>}
-        <NavLink to="/worker" active={location.pathname.startsWith('/worker')}>Workers</NavLink>
-      </div>
+        {/* Centered wordmark */}
+        <Link to="/" style={{
+          position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+          top: 'var(--sat)', height: 64,
+          display: 'flex', alignItems: 'center', gap: 7
+        }}>
+          <Logo variant="mark" size={27} />
+          <span style={{ fontSize: 18.5, fontWeight: 800, letterSpacing: '-0.02em', color: '#0D1117', whiteSpace: 'nowrap' }}>
+            Clean<span style={{ color: '#00C896' }}>Connect</span>
+          </span>
+        </Link>
 
-      {/* Auth */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Link to="/account" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 14px 6px 6px', borderRadius: 100, background: '#F6F6F6' }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#00C896', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#FFFFFF' }}>
-                {user.user_metadata?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '👤'}
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#000000', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user.user_metadata?.full_name || user.email || 'Account'}
+        <Link to={user ? '/dashboard' : '/login'} aria-label="Notifications" style={{ ...iconBtn, position: 'relative' }}>
+          <Icon name="bell" size={20} color="#0D1117" />
+          <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#00C896', border: '1.5px solid #FFFFFF' }} />
+        </Link>
+      </nav>
+
+      {/* Slide-in menu drawer */}
+      {menuOpen && (
+        <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1300 }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            position: 'absolute', top: 0, bottom: 0, left: 0, width: 300, background: '#FFFFFF',
+            padding: 'calc(24px + var(--sat)) 22px calc(24px + var(--sab)) calc(22px + var(--sal))',
+            boxShadow: '8px 0 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <Logo variant="tile" size={42} />
+              <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.02em', color: '#0D1117' }}>
+                Clean<span style={{ color: '#00C896' }}>Connect</span>
               </span>
-            </Link>
-            <button onClick={handleSignOut} className="hide-mobile"
-              style={{ background: 'transparent', border: '1px solid #E8E8E8', color: '#6B6B6B', padding: '8px 16px', borderRadius: 100, fontSize: 14, cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.target.style.borderColor = '#000000'; e.target.style.color = '#000000' }}
-              onMouseLeave={e => { e.target.style.borderColor = '#E8E8E8'; e.target.style.color = '#6B6B6B' }}>
-              Sign Out
-            </button>
+            </div>
+
+            {user && (
+              <div style={{ padding: '10px 10px 14px', borderBottom: '1px solid #F0F0F0', marginBottom: 8 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#0D1117' }}>
+                  {user.user_metadata?.full_name || 'Welcome back'}
+                </div>
+                <div style={{ fontSize: 12.5, color: '#9E9E9E', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user.email || user.phone || ''}
+                </div>
+              </div>
+            )}
+
+            {MENU.map(item => (
+              <Link key={item.label} to={item.to} onClick={() => setMenuOpen(false)} style={{
+                display: 'flex', alignItems: 'center', gap: 14, padding: '13px 10px',
+                borderRadius: 12, fontSize: 15.5, fontWeight: 600,
+                color: location.pathname === item.to ? '#00A87E' : '#0D1117',
+                background: location.pathname === item.to ? 'rgba(0,200,150,0.08)' : 'transparent'
+              }}>
+                <Icon name={item.icon} size={20} color={location.pathname === item.to ? '#00A87E' : '#6B6B6B'} />
+                {item.label}
+              </Link>
+            ))}
+
+            <div style={{ flex: 1 }} />
+
+            {user ? (
+              <button onClick={handleSignOut} style={{
+                display: 'flex', alignItems: 'center', gap: 14, padding: '13px 10px', background: 'transparent',
+                borderRadius: 12, fontSize: 15.5, fontWeight: 600, color: '#E11900', textAlign: 'left'
+              }}>
+                <Icon name="logout" size={20} color="#E11900" /> Sign Out
+              </button>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <Link to="/signup" onClick={() => setMenuOpen(false)} className="btn-primary" style={{ justifyContent: 'center' }}>Get Started</Link>
+                <Link to="/login" onClick={() => setMenuOpen(false)} style={{ textAlign: 'center', fontWeight: 600, color: '#0D1117', padding: 10 }}>Sign In</Link>
+              </div>
+            )}
           </div>
-        ) : (
-          <>
-            <Link to="/login" style={{ color: '#000000', fontSize: 15, fontWeight: 600, padding: '8px 12px', borderRadius: 100, whiteSpace: 'nowrap' }}>Sign In</Link>
-            <Link to="/signup" className="btn-primary" style={{ padding: '10px 18px', fontSize: 14, borderRadius: 100, whiteSpace: 'nowrap' }}>Get Started</Link>
-          </>
-        )}
-      </div>
-    </nav>
+        </div>
+      )}
+    </>
   )
 }
 
-function NavLink({ to, children, active }) {
-  return (
-    <Link to={to} style={{
-      color: active ? '#000000' : '#6B6B6B', fontSize: 14, padding: '8px 14px',
-      borderRadius: 100, fontWeight: active ? 700 : 500, transition: 'all 0.2s',
-      background: active ? '#F6F6F6' : 'transparent'
-    }}>{children}</Link>
-  )
+const iconBtn = {
+  width: 42, height: 42, borderRadius: '50%', background: '#FFFFFF',
+  border: '1px solid #F0F0F0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0
 }

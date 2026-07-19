@@ -29,7 +29,7 @@ export default function BookingSuccess() {
         {/* Success icon */}
         <div style={{ width: 90, height: 90, borderRadius: '50%', margin: '0 auto 28px', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>✓</div>
 
-        <h1 style={{ fontSize: 36, marginBottom: 12 }}>Payment Successful! 🎉</h1>
+        <h1 style={{ fontSize: 36, marginBottom: 12 }}>Payment Successful!</h1>
         <p style={{ color: '#6B6B6B', fontSize: 16, marginBottom: 32 }}>
           Your booking is confirmed and a cleaner will be assigned shortly.
         </p>

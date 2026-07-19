@@ -167,6 +167,7 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
 .home-screen {
   height: calc(100vh - var(--sat));
   height: calc(100dvh - var(--sat));
+  padding-top: 64px; /* fixed shared navbar */
   max-width: 640px;
   margin: 0 auto;
   width: 100%;

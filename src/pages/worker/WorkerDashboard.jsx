@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { Icon, ServiceBadge } from '../../components/Icons'
 import { SERVICES, STATUS_CONFIG, formatCurrency } from '../../data/services'
 
 // What the worker can do next for each booking status
 const NEXT_ACTION = {
-  pending: { to: 'confirmed', label: '✅ Accept Job' },
-  confirmed: { to: 'in-progress', label: '▶️ Start Job' },
-  'in-progress': { to: 'completed', label: '🏁 Mark Complete' }
+  pending: { to: 'confirmed', label: 'Accept Job' },
+  confirmed: { to: 'in-progress', label: 'Start Job' },
+  'in-progress': { to: 'completed', label: 'Mark Complete' }
 }
 
 export default function WorkerDashboard() {
@@ -56,7 +57,7 @@ export default function WorkerDashboard() {
   if (!cleaner) return (
     <div style={{ paddingTop: 68, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' }}>
       <div style={{ textAlign: 'center', padding: 24, maxWidth: 440 }}>
-        <div style={{ fontSize: 56, marginBottom: 20 }}>🧹</div>
+        <div style={{ marginBottom: 20 }}><Icon name="bucket" size={52} color="#D5D5D5" /></div>
         <h2 style={{ fontSize: 24, marginBottom: 10 }}>You're not registered as a worker yet</h2>
         <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Join CleanConnect Workers to receive cleaning jobs in your area.</p>
         <Link to="/worker/register" className="btn-primary">Register as a Worker →</Link>
@@ -84,7 +85,7 @@ export default function WorkerDashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 30, marginBottom: 6 }}>
-              {cleaner.avatar_emoji || '🧹'} Hi, {cleaner.name?.split(' ')[0]}
+              Hi, {cleaner.name?.split(' ')[0]}
             </h1>
             <p style={{ color: '#6B6B6B', fontSize: 15 }}>
               {cleaner.location}, {cleaner.province} {cleaner.verified && <span style={{ color: '#00C896' }}>· ✓ Verified</span>}
@@ -96,20 +97,23 @@ export default function WorkerDashboard() {
             background: cleaner.available ? 'rgba(0,200,150,0.1)' : '#F6F6F6',
             color: cleaner.available ? '#00C896' : '#6B6B6B', transition: 'all 0.2s'
           }}>
-            {cleaner.available ? '🟢 Available for jobs' : '⚫ Unavailable'}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: cleaner.available ? '#00C896' : '#9E9E9E', display: 'inline-block' }} />
+              {cleaner.available ? 'Available for jobs' : 'Unavailable'}
+            </span>
           </button>
         </div>
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 14, marginBottom: 32 }}>
           {[
-            { label: 'Jobs Today', value: stats.today, icon: '📅', color: '#276EF1' },
-            { label: 'Active Jobs', value: stats.active, icon: '🔄', color: '#C46A00' },
-            { label: 'Completed', value: stats.completed, icon: '✅', color: '#00C896' },
-            { label: 'Total Earned', value: formatCurrency(stats.earned), icon: '💰', color: '#00C896' }
+            { label: 'Jobs Today', value: stats.today, icon: 'calendar', color: '#276EF1' },
+            { label: 'Active Jobs', value: stats.active, icon: 'refresh', color: '#C46A00' },
+            { label: 'Completed', value: stats.completed, icon: 'checkCircle', color: '#00C896' },
+            { label: 'Total Earned', value: formatCurrency(stats.earned), icon: 'wallet', color: '#00C896' }
           ].map(s => (
             <div key={s.label} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 14, padding: '18px 20px' }}>
-              <div style={{ fontSize: 22, marginBottom: 8 }}>{s.icon}</div>
+              <div style={{ marginBottom: 8 }}><Icon name={s.icon} size={20} color={s.color} /></div>
               <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'Inter', color: s.color, marginBottom: 3 }}>{s.value}</div>
               <div style={{ fontSize: 12, color: '#9E9E9E' }}>{s.label}</div>
             </div>
@@ -139,7 +143,7 @@ export default function WorkerDashboard() {
         {/* Jobs */}
         {shown.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 24px', background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16 }}>
-            <div style={{ fontSize: 44, marginBottom: 14 }}>{filter === 'active' ? '📭' : '📜'}</div>
+            <div style={{ marginBottom: 14 }}><Icon name="inbox" size={40} color="#C9C9C9" /></div>
             <p style={{ color: '#6B6B6B', fontSize: 16 }}>
               {filter === 'active' ? 'No active jobs yet — new assignments will appear here.' : 'No completed jobs yet.'}
             </p>
@@ -202,7 +206,7 @@ function LocationShareCard({ cleaner }) {
       borderRadius: 16, padding: '18px 22px', marginBottom: 28,
       display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
     }}>
-      <div style={{ fontSize: 28 }}>📡</div>
+      <Icon name="radio" size={26} color="#00C896" />
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ fontSize: 15, fontWeight: 600, color: '#000000', marginBottom: 3 }}>
           {sharing ? 'Sharing your live location' : 'Share your live location'}
@@ -212,7 +216,7 @@ function LocationShareCard({ cleaner }) {
             ? 'Your customer can see you approaching on their map.'
             : 'Let your customer track your arrival while a job is in progress.'}
         </div>
-        {error && <div style={{ fontSize: 13, color: '#E11900', marginTop: 6 }}>⚠️ {error}</div>}
+        {error && <div style={{ fontSize: 13, color: '#E11900', marginTop: 6 }}>{error}</div>}
       </div>
       <button onClick={sharing ? stop : start} style={{
         padding: '10px 20px', borderRadius: 100, cursor: 'pointer', fontSize: 14, fontWeight: 500,
@@ -227,7 +231,6 @@ function LocationShareCard({ cleaner }) {
 }
 
 function JobCard({ job, onStatusChange }) {
-  const service = SERVICES.find(s => s.id === job.service_id)
   const conf = STATUS_CONFIG[job.status] || STATUS_CONFIG.pending
   const action = NEXT_ACTION[job.status]
   const fullAddress = `${job.address}, ${job.city}, ${job.province}`
@@ -241,22 +244,20 @@ function JobCard({ job, onStatusChange }) {
   return (
     <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: '22px 24px' }}>
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <div style={{ width: 52, height: 52, borderRadius: 12, background: '#EEEEEE', border: '1px solid #E8E8E8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
-          {service?.icon || '🧹'}
-        </div>
+        <ServiceBadge id={job.service_id} size={52} iconSize={26} />
 
         <div style={{ flex: 1, minWidth: 220 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
             <h3 style={{ fontSize: 17, color: '#000000' }}>{job.service_name}</h3>
             <span className={`badge ${conf.color}`} style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12 }}>
-              {conf.icon} {conf.label}
+              {conf.label}
             </span>
           </div>
           <div style={{ display: 'grid', gap: 5, fontSize: 13.5, color: '#6B6B6B' }}>
-            <span>📍 {fullAddress}</span>
-            <span>📅 {job.booking_date} · ⏰ {job.time_slot} · 📐 {job.sqm} m²</span>
-            <span>👤 {job.contact_name} · <a href={`tel:${job.contact_phone?.replace(/\s/g, '')}`} style={{ color: '#276EF1' }}>📱 {job.contact_phone}</a></span>
-            {job.special_instructions && <span style={{ fontStyle: 'italic' }}>📝 "{job.special_instructions}"</span>}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="pin" size={13} color="#9E9E9E" /> {fullAddress}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="calendar" size={13} color="#9E9E9E" /> {job.booking_date} · {job.time_slot} · {job.sqm} m²</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="user" size={13} color="#9E9E9E" /> {job.contact_name} · <a href={`tel:${job.contact_phone?.replace(/\s/g, '')}`} style={{ color: '#276EF1' }}>{job.contact_phone}</a></span>
+            {job.special_instructions && <span style={{ fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="fileText" size={13} color="#9E9E9E" /> "{job.special_instructions}"</span>}
           </div>
         </div>
 
@@ -276,12 +277,12 @@ function JobCard({ job, onStatusChange }) {
         )}
         <a href={uberUrl} target="_blank" rel="noreferrer"
           style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid #E8E8E8', background: '#EEEEEE', color: '#000000', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          🚗 Uber to Job
+          <Icon name="car" size={16} color="#0D1117" /> Uber to Job
         </a>
         <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noreferrer"
           style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid #E8E8E8', background: '#EEEEEE', color: '#000000', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          🗺️ Directions
+          <Icon name="navigation" size={15} color="#0D1117" /> Directions
         </a>
       </div>
     </div>

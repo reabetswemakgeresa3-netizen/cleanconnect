@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { SERVICES, STATUS_CONFIG, formatCurrency } from '../data/services'
 import LiveTrackingMap from '../components/LiveTrackingMap'
+import { Icon, ServiceBadge } from '../components/Icons'
 
 const DEMO_BOOKINGS = [
   {
@@ -103,7 +104,7 @@ export default function Dashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36, flexWrap: 'wrap', gap: 20 }}>
           <div>
             <h1 style={{ fontSize: 32, marginBottom: 6 }}>
-              Hey, {userName.split(' ')[0]} 👋
+              Hey, {userName.split(' ')[0]}
             </h1>
             <p style={{ color: '#6B6B6B', fontSize: 16 }}>Manage and track all your cleaning bookings</p>
           </div>
@@ -113,16 +114,16 @@ export default function Dashboard() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px,1fr))', gap: 16, marginBottom: 36 }}>
           {[
-            { label: 'Total Bookings', value: stats.total, icon: '📋', color: '#6B6B6B' },
-            { label: 'Completed', value: stats.completed, icon: '✅', color: '#00C896' },
-            { label: 'Upcoming', value: stats.upcoming, icon: '📅', color: '#276EF1' },
-            { label: 'Total Spent', value: formatCurrency(stats.spent), icon: '💳', color: '#00C896' }
+            { label: 'Total Bookings', value: stats.total, icon: 'clipboard', color: '#6B6B6B' },
+            { label: 'Completed', value: stats.completed, icon: 'checkCircle', color: '#00C896' },
+            { label: 'Upcoming', value: stats.upcoming, icon: 'calendar', color: '#276EF1' },
+            { label: 'Total Spent', value: formatCurrency(stats.spent), icon: 'card', color: '#00C896' }
           ].map(stat => (
             <div key={stat.label} style={{
               background: '#F6F6F6', border: '1px solid #E8E8E8',
               borderRadius: 14, padding: '20px'
             }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>{stat.icon}</div>
+              <div style={{ marginBottom: 8 }}><Icon name={stat.icon} size={22} color={stat.color} /></div>
               <div style={{ fontSize: 24, fontWeight: 800, fontFamily: 'Inter', color: stat.color, marginBottom: 4 }}>
                 {stat.value}
               </div>
@@ -155,7 +156,7 @@ export default function Dashboard() {
         {/* Bookings list */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px', color: '#6B6B6B' }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+            <div style={{ marginBottom: 12 }}><Icon name="refresh" size={28} color="#C9C9C9" /></div>
             Loading your bookings...
           </div>
         ) : filtered.length === 0 ? (
@@ -182,7 +183,6 @@ export default function Dashboard() {
 }
 
 function BookingCard({ booking, onClick }) {
-  const service = SERVICES.find(s => s.id === booking.service_id)
   const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
 
   return (
@@ -201,21 +201,21 @@ function BookingCard({ booking, onClick }) {
         background: '#EEEEEE', border: '1px solid #E8E8E8',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 26, flexShrink: 0
-      }}>{service?.icon || '🧹'}</div>
+      }}><ServiceBadge id={booking.service_id} size={44} iconSize={22} /></div>
 
       {/* Main info */}
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <h3 style={{ fontSize: 16, color: '#000000' }}>{booking.service_name}</h3>
           <span className={`badge ${statusConf.color}`} style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12 }}>
-            {statusConf.icon} {statusConf.label}
+            {statusConf.label}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-          <InfoChip icon="📍" text={`${booking.city}, ${booking.province}`} />
-          <InfoChip icon="📐" text={`${booking.sqm} m²`} />
-          <InfoChip icon="📅" text={booking.booking_date} />
-          <InfoChip icon="⏰" text={booking.time_slot} />
+          <InfoChip icon="pin" text={`${booking.city}, ${booking.province}`} />
+          <InfoChip icon="ruler" text={`${booking.sqm} m²`} />
+          <InfoChip icon="calendar" text={booking.booking_date} />
+          <InfoChip icon="clock" text={booking.time_slot} />
         </div>
       </div>
 
@@ -225,7 +225,7 @@ function BookingCard({ booking, onClick }) {
           {formatCurrency(booking.amount)}
         </div>
         <div style={{ fontSize: 12, color: booking.payment_status === 'paid' ? '#00C896' : '#C46A00', marginTop: 3 }}>
-          {booking.payment_status === 'paid' ? '✓ Paid' : '⏳ Unpaid'}
+          {booking.payment_status === 'paid' ? '✓ Paid' : 'Unpaid'}
         </div>
       </div>
 
@@ -235,7 +235,6 @@ function BookingCard({ booking, onClick }) {
 }
 
 function BookingModal({ booking, onClose }) {
-  const service = SERVICES.find(s => s.id === booking.service_id)
   const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
 
   const steps = [
@@ -262,10 +261,10 @@ function BookingModal({ booking, onClose }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <span style={{ fontSize: 28 }}>{service?.icon || '🧹'}</span>
+              <ServiceBadge id={booking.service_id} size={40} iconSize={20} />
               <h2 style={{ fontSize: 22 }}>{booking.service_name}</h2>
             </div>
-            <span className={`badge ${statusConf.color}`}>{statusConf.icon} {statusConf.label}</span>
+            <span className={`badge ${statusConf.color}`}>{statusConf.label}</span>
           </div>
           <button onClick={onClose} style={{
             background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B',
@@ -288,7 +287,7 @@ function BookingModal({ booking, onClose }) {
             { label: 'Date', value: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
             { label: 'Time Window', value: booking.time_slot },
             { label: 'Amount', value: formatCurrency(booking.amount) },
-            { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : '⏳ Pending' }
+            { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : 'Pending' }
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #EEEEEE' }}>
               <span style={{ color: '#6B6B6B', fontSize: 14 }}>{item.label}</span>
@@ -301,7 +300,7 @@ function BookingModal({ booking, onClose }) {
         {booking.status === 'in-progress' && booking.cleaner_id && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 12, color: '#9E9E9E', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-              📡 Track Your Cleaner
+              <Icon name="radio" size={16} color="#00C896" style={{ verticalAlign: '-2px', marginRight: 6 }} />Track Your Cleaner
             </div>
             <LiveTrackingMap cleanerId={booking.cleaner_id} cleanerName={booking.cleaner_assigned} />
           </div>
@@ -339,7 +338,7 @@ function BookingModal({ booking, onClose }) {
 function InfoChip({ icon, text }) {
   return (
     <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B6B6B' }}>
-      <span>{icon}</span> {text}
+      <Icon name={icon} size={13} color="#9E9E9E" /> {text}
     </span>
   )
 }
@@ -347,7 +346,7 @@ function InfoChip({ icon, text }) {
 function EmptyState() {
   return (
     <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-      <div style={{ fontSize: 56, marginBottom: 20 }}>🧹</div>
+      <div style={{ marginBottom: 20 }}><Icon name="bucket" size={52} color="#D5D5D5" /></div>
       <h3 style={{ fontSize: 22, marginBottom: 10 }}>No bookings yet</h3>
       <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Book your first clean and it'll appear here</p>
       <Link to="/book" className="btn-primary">Book a Clean →</Link>

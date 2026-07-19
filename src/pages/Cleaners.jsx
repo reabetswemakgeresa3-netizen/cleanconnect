@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { Icon, InitialsAvatar } from '../components/Icons'
 
 const DEMO_CLEANERS = [
   {
     id: '1',
     name: 'Zanele Dlamini',
-    avatar: '👩🏾',
     location: 'Johannesburg, Gauteng',
     specialties: ['residential', 'office', 'carpet'],
     rating: 4.9,
@@ -19,7 +19,6 @@ const DEMO_CLEANERS = [
   {
     id: '2',
     name: 'Sipho Nkosi',
-    avatar: '👨🏿',
     location: 'Sandton, Gauteng',
     specialties: ['industrial', 'postConstruction', 'office'],
     rating: 4.8,
@@ -33,7 +32,6 @@ const DEMO_CLEANERS = [
   {
     id: '3',
     name: 'Fatima Mokoena',
-    avatar: '👩🏽',
     location: 'Cape Town, Western Cape',
     specialties: ['medical', 'residential', 'office'],
     rating: 5.0,
@@ -47,7 +45,6 @@ const DEMO_CLEANERS = [
   {
     id: '4',
     name: 'Thabo Sithole',
-    avatar: '👨🏾',
     location: 'Pretoria, Gauteng',
     specialties: ['gardening', 'residential', 'event'],
     rating: 4.7,
@@ -61,7 +58,6 @@ const DEMO_CLEANERS = [
   {
     id: '5',
     name: 'Nomsa Khumalo',
-    avatar: '👩🏿',
     location: 'Durban, KwaZulu-Natal',
     specialties: ['residential', 'carpet', 'event'],
     rating: 4.9,
@@ -75,7 +71,6 @@ const DEMO_CLEANERS = [
   {
     id: '6',
     name: 'Kagiso Molefe',
-    avatar: '👨🏽',
     location: 'Ekurhuleni, Gauteng',
     specialties: ['industrial', 'postConstruction', 'gardening'],
     rating: 4.6,
@@ -101,20 +96,20 @@ function Avatar({ cleaner, size, fontSize, ring = '#E8E8E8' }) {
       {showPhoto
         ? <img src={cleaner.avatar_url} alt={cleaner.name} loading="lazy" onError={() => setBroken(true)}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        : (cleaner.avatar || cleaner.avatar_emoji || '🧹')}
+        : <InitialsAvatar name={cleaner.name} size={size} />}
     </div>
   )
 }
 
 const SERVICE_LABELS = {
-  residential: '🏠 Residential',
-  industrial: '🏭 Industrial',
-  office: '🏢 Office',
-  gardening: '🌿 Gardening',
-  medical: '🏥 Medical',
-  carpet: '🛋️ Carpet',
-  postConstruction: '🔨 Post-Construction',
-  event: '🎉 Events'
+  residential: 'Residential',
+  industrial: 'Industrial',
+  office: 'Office',
+  gardening: 'Gardening',
+  medical: 'Medical',
+  carpet: 'Carpet',
+  postConstruction: 'Post-Construction',
+  event: 'Events'
 }
 
 export default function Cleaners() {
@@ -186,7 +181,7 @@ export default function Cleaners() {
 
         {filtered.length === 0 && (
           <div style={{ textAlign: 'center', padding: '60px', color: '#6B6B6B' }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+            <div style={{ marginBottom: 12 }}><Icon name="search" size={40} color="#C9C9C9" /></div>
             <p>No cleaners found for this filter. Try a different service.</p>
           </div>
         )}
@@ -240,10 +235,10 @@ function CleanerCard({ cleaner, onClick }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
           <h3 style={{ fontSize: 17, color: '#000000' }}>{cleaner.name}</h3>
           {cleaner.verified && (
-            <span style={{ fontSize: 14 }} title="Verified">✅</span>
+            <span title="Verified" style={{ display: 'inline-flex' }}><Icon name="shield" size={15} color="#00C896" /></span>
           )}
         </div>
-        <div style={{ fontSize: 13, color: '#6B6B6B' }}>📍 {cleaner.location}</div>
+        <div style={{ fontSize: 13, color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 5 }}><Icon name="pin" size={13} color="#9E9E9E" /> {cleaner.location}</div>
       </div>
 
       {/* Bio */}
@@ -267,7 +262,7 @@ function CleanerCard({ cleaner, onClick }) {
         <span style={{ fontSize: 12, color: cleaner.available ? '#00C896' : '#E11900', fontWeight: 500 }}>
           ● {cleaner.available ? 'Available' : 'Unavailable'}
         </span>
-        <span style={{ fontSize: 12, color: '#9E9E9E' }}>⚡ {cleaner.response_time}</span>
+        <span style={{ fontSize: 12, color: '#9E9E9E', display: 'inline-flex', alignItems: 'center', gap: 5 }}><Icon name="zap" size={12} color="#9E9E9E" /> {cleaner.response_time}</span>
       </div>
     </div>
   )
@@ -295,9 +290,9 @@ function CleanerModal({ cleaner, onClose }) {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <h2 style={{ fontSize: 22 }}>{cleaner.name}</h2>
-                {cleaner.verified && <span>✅</span>}
+                {cleaner.verified && <Icon name="shield" size={16} color="#00C896" />}
               </div>
-              <div style={{ color: '#6B6B6B', fontSize: 14 }}>📍 {cleaner.location}</div>
+              <div style={{ color: '#6B6B6B', fontSize: 14, display: 'flex', alignItems: 'center', gap: 5 }}><Icon name="pin" size={14} color="#9E9E9E" /> {cleaner.location}</div>
             </div>
           </div>
           <button onClick={onClose} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B', width: 34, height: 34, borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>✕</button>
@@ -341,7 +336,7 @@ function CleanerModal({ cleaner, onClose }) {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {cleaner.languages.map(l => (
               <span key={l} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B', borderRadius: 8, padding: '5px 12px', fontSize: 13 }}>
-                🗣 {l}
+                {l}
               </span>
             ))}
           </div>

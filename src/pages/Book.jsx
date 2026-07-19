@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { Icon, ServiceBadge } from '../components/Icons'
 import { SERVICES, PROVINCES, calculatePrice, formatCurrency } from '../data/services'
 import { supabase } from '../lib/supabase'
 
@@ -162,7 +163,7 @@ export default function Book() {
                   border: `2px solid ${form.serviceId === service.id ? '#00C896' : '#E8E8E8'}`,
                   borderRadius: 14, padding: '20px 16px', textAlign: 'left', transition: 'all 0.2s', cursor: 'pointer'
                 }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{service.icon}</div>
+                  <div style={{ marginBottom: 10 }}><ServiceBadge id={service.id} size={48} iconSize={24} /></div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#000000', marginBottom: 4 }}>{service.name}</div>
                   <div style={{ fontSize: 13, color: '#00C896', fontWeight: 700 }}>R{service.pricePerSqm}/m²</div>
                 </button>
@@ -249,7 +250,7 @@ export default function Book() {
             <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24, marginBottom: 24 }}>
               <div style={{ fontSize: 12, color: '#9E9E9E', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Booking Summary</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <SummaryRow label="Service" value={`${selectedService?.icon} ${selectedService?.name}`} />
+                <SummaryRow label="Service" value={selectedService?.name} />
                 <SummaryRow label="Property Size" value={`${form.sqm} m²`} />
                 <SummaryRow label="Address" value={`${form.address}, ${form.city}`} />
                 <SummaryRow label="Province" value={form.province} />
@@ -265,14 +266,14 @@ export default function Book() {
 
             {error && (
               <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, color: '#E11900', fontSize: 14 }}>
-                ⚠️ {error}
+                {error}
               </div>
             )}
 
             {/* Pay button */}
             <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 28 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                <div style={{ fontSize: 28 }}>🔒</div>
+                <Icon name="lock" size={26} color="#00C896" />
                 <div>
                   <div style={{ fontWeight: 600, color: '#000000', fontSize: 16 }}>Secure Payment via Yoco</div>
                   <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 2 }}>You'll be redirected to Yoco's secure payment page</div>
@@ -280,7 +281,7 @@ export default function Book() {
               </div>
 
               <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-                {['💳 Visa / Mastercard', '🏦 Instant EFT', '📱 SnapScan'].map(m => (
+                {['Visa / Mastercard', 'Instant EFT', 'SnapScan'].map(m => (
                   <span key={m} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: '#6B6B6B' }}>{m}</span>
                 ))}
               </div>
@@ -296,7 +297,7 @@ export default function Book() {
         {step === 5 && (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <div style={{ width: 80, height: 80, borderRadius: '50%', margin: '0 auto 24px', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>✓</div>
-            <h2 style={{ fontSize: 32, marginBottom: 12 }}>Booking Received! 🎉</h2>
+            <h2 style={{ fontSize: 32, marginBottom: 12 }}>Booking Received!</h2>
             <p style={{ color: '#6B6B6B', fontSize: 16, marginBottom: 24 }}>
               Your booking has been saved. Complete payment to confirm.
             </p>

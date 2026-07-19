@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { SERVICES, calculatePrice, formatCurrency } from '../data/services'
-import Logo from '../components/Logo'
+import { Icon, ServiceIcon, ServiceBadge } from '../components/Icons'
 
 const JHB = { lat: -26.2041, lng: 28.0473 }
 
@@ -31,8 +31,10 @@ const availableDot = L.divIcon({
 const cleanerPin = (avatarUrl) => L.divIcon({
   className: '',
   html: `<div style="width:52px;height:52px;background:#00C896;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;border:3px solid #FFFFFF;box-shadow:0 6px 18px rgba(0,0,0,0.28);">
-    <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#FFFFFF;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;font-size:18px;">
-      ${avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" style="width:100%;height:100%;object-fit:cover" />` : '🧹'}
+    <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;background:#FFFFFF;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;">
+      ${avatarUrl
+        ? `<img src="${escapeHtml(avatarUrl)}" style="width:100%;height:100%;object-fit:cover" />`
+        : '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#00C896" stroke-width="2.2" stroke-linecap="round"><path d="M5 8.5h14l-1.7 10.6a2 2 0 0 1-2 1.7H8.7a2 2 0 0 1-2-1.7Z"/><path d="M7.5 8.5a4.5 4.5 0 0 1 9 0"/></svg>'}
     </div>
   </div>`,
   iconSize: [52, 52], iconAnchor: [26, 63]
@@ -76,12 +78,11 @@ function etaMins(a, b) {
 }
 
 export default function Home() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const [city, setCity] = useState('Johannesburg')
   const [userPos, setUserPos] = useState(JHB)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   // Bottom sheet state
   const [serviceId, setServiceId] = useState('residential')
@@ -173,31 +174,9 @@ export default function Home() {
 
   return (
     <div className="home-screen">
-      {/* ── Top bar: hamburger · logo · bell ─────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 10px' }}>
-        <button onClick={() => setMenuOpen(true)} aria-label="Menu" style={iconBtn}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0D1117" strokeWidth="2.2" strokeLinecap="round">
-            <path d="M4 7h16M4 12h16M4 17h16" />
-          </svg>
-        </button>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-          <Logo variant="mark" size={26} />
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', color: '#0D1117' }}>
-            Clean<span style={{ color: '#00C896' }}>Connect</span>
-          </span>
-        </Link>
-        <Link to={user ? '/dashboard' : '/login'} aria-label="Notifications" style={{ ...iconBtn, position: 'relative' }}>
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0D1117" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-          </svg>
-          <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#00C896', border: '1.5px solid #FFFFFF' }} />
-        </Link>
-      </div>
-
       {/* ── Location card ────────────────────────────────────── */}
       <div style={{
-        margin: '2px 20px 10px', background: '#FFFFFF', borderRadius: 16,
+        margin: '14px 20px 10px', background: '#FFFFFF', borderRadius: 16,
         border: '1px solid #F0F0F0', boxShadow: 'var(--shadow-card)',
         padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12
       }}>
@@ -271,9 +250,12 @@ export default function Home() {
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             background: 'transparent', padding: '4px 0 12px', borderBottom: '1px solid #F0F0F0', textAlign: 'left'
           }}>
-            <div>
-              <div style={{ fontSize: 12, color: '#9E9E9E', marginBottom: 2 }}>Select Service</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#0D1117' }}>{service.icon} {service.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <ServiceBadge id={serviceId} size={40} iconSize={20} />
+              <div>
+                <div style={{ fontSize: 12, color: '#9E9E9E', marginBottom: 2 }}>Select Service</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#0D1117' }}>{service.name}</div>
+              </div>
             </div>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9E9E9E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />
@@ -322,7 +304,7 @@ export default function Home() {
                 width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '13px 4px',
                 background: 'transparent', borderBottom: '1px solid #F5F5F5', textAlign: 'left'
               }}>
-                <span style={{ fontSize: 24 }}>{s.icon}</span>
+                <ServiceBadge id={s.id} size={40} iconSize={20} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 15, fontWeight: 600, color: '#0D1117' }}>{s.name}</div>
                   <div style={{ fontSize: 12.5, color: '#9E9E9E' }}>R{s.pricePerSqm}/m² · min {s.minSqm} m²</div>
@@ -338,59 +320,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── Hamburger menu drawer ────────────────────────────── */}
-      {menuOpen && (
-        <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1300 }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            position: 'absolute', top: 0, bottom: 0, left: 0, width: 290, background: '#FFFFFF',
-            padding: `calc(24px + var(--sat)) 22px calc(24px + var(--sab)) calc(22px + var(--sal))`,
-            boxShadow: '8px 0 40px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 22 }}>
-              <Logo variant="tile" size={40} />
-              <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-0.02em', color: '#0D1117' }}>
-                Clean<span style={{ color: '#00C896' }}>Connect</span>
-              </span>
-            </div>
-            {[
-              { to: '/services', label: 'Services', icon: '🧽' },
-              { to: '/cleaners', label: 'Our Cleaners', icon: '⭐' },
-              { to: user ? '/book' : '/signup', label: 'Book a Clean', icon: '🗓️' },
-              { to: '/dashboard', label: 'My Bookings', icon: '📋' },
-              { to: '/worker', label: 'Worker Portal', icon: '🧹' },
-              { to: '/account', label: 'Account', icon: '👤' }
-            ].map(item => (
-              <Link key={item.label} to={item.to} onClick={() => setMenuOpen(false)} style={{
-                display: 'flex', alignItems: 'center', gap: 14, padding: '13px 10px',
-                borderRadius: 12, fontSize: 15.5, fontWeight: 600, color: '#0D1117'
-              }}>
-                <span style={{ fontSize: 19 }}>{item.icon}</span> {item.label}
-              </Link>
-            ))}
-            <div style={{ flex: 1 }} />
-            {user ? (
-              <button onClick={async () => { await signOut(); setMenuOpen(false) }} style={{
-                display: 'flex', alignItems: 'center', gap: 14, padding: '13px 10px', background: 'transparent',
-                borderRadius: 12, fontSize: 15.5, fontWeight: 600, color: '#E11900', textAlign: 'left'
-              }}>
-                <span style={{ fontSize: 19 }}>🚪</span> Sign Out
-              </button>
-            ) : (
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-primary" style={{ justifyContent: 'center' }}>
-                Sign In
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
-}
-
-const iconBtn = {
-  width: 42, height: 42, borderRadius: '50%', background: '#FFFFFF',
-  border: '1px solid #F0F0F0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
 }
 
 const stepBtn = {

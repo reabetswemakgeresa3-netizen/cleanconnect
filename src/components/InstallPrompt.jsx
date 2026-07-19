@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Logo from './Logo'
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
@@ -66,12 +67,7 @@ export default function InstallPrompt() {
       <style>{`@keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }`}</style>
 
       {/* App icon */}
-      <div style={{
-        width: 48, height: 48, borderRadius: 12, flexShrink: 0,
-        background: 'linear-gradient(135deg,#00C896,#00A87E)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 22
-      }}>✦</div>
+      <Logo variant="tile" size={48} style={{ flexShrink: 0 }} />
 
       {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
