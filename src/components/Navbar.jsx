@@ -17,7 +17,9 @@ export default function Navbar() {
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
       background: '#FFFFFF',
       borderBottom: '1px solid #EEEEEE',
-      padding: '0 24px', height: 64,
+      // White bar bleeds into the notch/status-bar area; content sits below it
+      padding: 'var(--sat) calc(24px + var(--sar)) 0 calc(24px + var(--sal))',
+      height: 'calc(64px + var(--sat))',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between'
     }}>
       {/* Logo */}

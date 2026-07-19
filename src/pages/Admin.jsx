@@ -490,7 +490,7 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
   ]
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, backdropFilter: 'blur(6px)' }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'calc(24px + var(--sat)) calc(24px + var(--sar)) calc(24px + var(--sab)) calc(24px + var(--sal))', backdropFilter: 'blur(6px)' }}>
       <div onClick={e => e.stopPropagation()} style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 20, width: '100%', maxWidth: 560, maxHeight: '88vh', overflowY: 'auto', padding: 32 }}>
 
         {/* Header */}

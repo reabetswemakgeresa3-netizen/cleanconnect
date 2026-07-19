@@ -249,7 +249,8 @@ function BookingModal({ booking, onClose }) {
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 200,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 'calc(24px + var(--sat)) calc(24px + var(--sar)) calc(24px + var(--sab)) calc(24px + var(--sal))',
       backdropFilter: 'blur(4px)'
     }}>
       <div onClick={e => e.stopPropagation()} style={{

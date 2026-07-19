@@ -58,7 +58,7 @@ export default function InstallPrompt() {
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 999,
       background: '#F6F6F6', borderTop: '1px solid #E8E8E8',
-      padding: '16px 20px',
+      padding: '16px calc(20px + var(--sar)) calc(16px + var(--sab)) calc(20px + var(--sal))',
       display: 'flex', alignItems: 'center', gap: 14,
       boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
       animation: 'slideUp 0.3s ease'
