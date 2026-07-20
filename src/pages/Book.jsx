@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Icon, ServiceBadge } from '../components/Icons'
+import PinSpinner from '../components/PinSpinner'
 import { SERVICES, PROVINCES, calculatePrice, formatCurrency } from '../data/services'
 import { supabase } from '../lib/supabase'
 
@@ -130,7 +131,7 @@ export default function Book() {
   }
 
   return (
-    <div style={{ paddingTop: 64, minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px 170px' }}>
 
         {/* Progress */}
@@ -140,11 +141,11 @@ export default function Book() {
               const num = i+1; const done = num < step; const active = num === step
               return (
                 <div key={s} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                  {i > 0 && <div style={{ position: 'absolute', top: 14, right: '50%', left: '-50%', height: 2, background: done||active ? '#00C896' : '#E8E8E8', transition: 'background 0.3s' }} />}
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', zIndex: 1, background: done ? '#00C896' : active ? 'transparent' : '#EEEEEE', border: `2px solid ${done||active ? '#00C896' : '#E8E8E8'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: done ? '#FFFFFF' : active ? '#00C896' : '#9E9E9E', fontWeight: 700 }}>
+                  {i > 0 && <div style={{ position: 'absolute', top: 14, right: '50%', left: '-50%', height: 2, background: done||active ? '#00C896' : 'var(--border)', transition: 'background 0.3s' }} />}
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', zIndex: 1, background: done ? '#00C896' : active ? 'transparent' : 'var(--tile-2)', border: `2px solid ${done||active ? '#00C896' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: done ? '#FFFFFF' : active ? '#00C896' : 'var(--text-dim)', fontWeight: 700 }}>
                     {done ? '✓' : num}
                   </div>
-                  {step !== 5 && <div style={{ fontSize: 11, marginTop: 6, color: active ? '#00C896' : '#9E9E9E', fontWeight: active ? 600 : 400 }}>{s}</div>}
+                  {step !== 5 && <div style={{ fontSize: 11, marginTop: 6, color: active ? '#00C896' : 'var(--text-dim)', fontWeight: active ? 600 : 400 }}>{s}</div>}
                 </div>
               )
             })}
@@ -155,16 +156,16 @@ export default function Book() {
         {step === 1 && (
           <div>
             <h2 style={{ fontSize: 28, marginBottom: 8 }}>Choose a Service</h2>
-            <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Select the type of cleaning you need</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Select the type of cleaning you need</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px,1fr))', gap: 14 }}>
               {SERVICES.map(service => (
                 <button key={service.id} onClick={() => setVal('serviceId', service.id)} style={{
-                  background: form.serviceId === service.id ? 'rgba(0,200,150,0.1)' : '#F6F6F6',
-                  border: `2px solid ${form.serviceId === service.id ? '#00C896' : '#E8E8E8'}`,
+                  background: form.serviceId === service.id ? 'rgba(0,200,150,0.1)' : 'var(--tile)',
+                  border: `2px solid ${form.serviceId === service.id ? '#00C896' : 'var(--border)'}`,
                   borderRadius: 14, padding: '20px 16px', textAlign: 'left', transition: 'all 0.2s', cursor: 'pointer'
                 }}>
                   <div style={{ marginBottom: 10 }}><ServiceBadge id={service.id} size={48} iconSize={24} /></div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: '#000000', marginBottom: 4 }}>{service.name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{service.name}</div>
                   <div style={{ fontSize: 13, color: '#00C896', fontWeight: 700 }}>R{service.pricePerSqm}/m²</div>
                 </button>
               ))}
@@ -176,21 +177,21 @@ export default function Book() {
         {step === 2 && (
           <div>
             <h2 style={{ fontSize: 28, marginBottom: 8 }}>Property Details</h2>
-            <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Tell us about the space to be cleaned</p>
-            <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24, marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 14, color: '#6B6B6B', marginBottom: 12, fontWeight: 500 }}>Property Size (m²)</label>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Tell us about the space to be cleaned</p>
+            <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, marginBottom: 24 }}>
+              <label style={{ display: 'block', fontSize: 14, color: 'var(--text-muted)', marginBottom: 12, fontWeight: 500 }}>Property Size (m²)</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <input type="range" min={selectedService?.minSqm||10} max={2000} value={form.sqm}
                   onChange={e => setVal('sqm', Number(e.target.value))} style={{ flex: 1, accentColor: '#00C896' }} />
                 <div style={{ textAlign: 'center', minWidth: 80 }}>
                   <input type="number" value={form.sqm} min={selectedService?.minSqm||10}
                     onChange={e => setVal('sqm', Math.max(selectedService?.minSqm||10, Number(e.target.value)))}
-                    style={{ width: 80, background: '#EEEEEE', border: '1px solid #E8E8E8', borderRadius: 8, padding: 8, color: '#000000', fontSize: 16, textAlign: 'center', fontWeight: 700 }} />
-                  <div style={{ fontSize: 11, color: '#9E9E9E', marginTop: 3 }}>m²</div>
+                    style={{ width: 80, background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, color: 'var(--text)', fontSize: 16, textAlign: 'center', fontWeight: 700 }} />
+                  <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>m²</div>
                 </div>
               </div>
-              <div style={{ marginTop: 16, padding: '14px 16px', background: '#EEEEEE', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#6B6B6B', fontSize: 14 }}>Estimated Total</span>
+              <div style={{ marginTop: 16, padding: '14px 16px', background: 'var(--tile-2)', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Estimated Total</span>
                 <span style={{ color: '#00C896', fontSize: 22, fontWeight: 800, fontFamily: 'Inter' }}>{formatCurrency(price)}</span>
               </div>
             </div>
@@ -219,19 +220,19 @@ export default function Book() {
         {step === 3 && (
           <div>
             <h2 style={{ fontSize: 28, marginBottom: 8 }}>Pick a Date & Time</h2>
-            <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Choose when you'd like us to arrive</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Choose when you'd like us to arrive</p>
             <FormField label="Preferred Date">
               <input className="input-field" type="date" min={minDate()} value={form.date} onChange={e => setVal('date', e.target.value)} />
             </FormField>
             <div style={{ marginTop: 24 }}>
-              <label style={{ display: 'block', fontSize: 14, color: '#6B6B6B', marginBottom: 14, fontWeight: 500 }}>Arrival Time Window</label>
+              <label style={{ display: 'block', fontSize: 14, color: 'var(--text-muted)', marginBottom: 14, fontWeight: 500 }}>Arrival Time Window</label>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px,1fr))', gap: 12 }}>
                 {TIME_SLOTS.map(slot => (
                   <button key={slot} onClick={() => setVal('timeSlot', slot)} style={{
                     padding: '14px 12px', borderRadius: 12,
-                    border: `2px solid ${form.timeSlot === slot ? '#00C896' : '#E8E8E8'}`,
-                    background: form.timeSlot === slot ? 'rgba(0,200,150,0.1)' : '#F6F6F6',
-                    color: form.timeSlot === slot ? '#00C896' : '#6B6B6B',
+                    border: `2px solid ${form.timeSlot === slot ? '#00C896' : 'var(--border)'}`,
+                    background: form.timeSlot === slot ? 'rgba(0,200,150,0.1)' : 'var(--tile)',
+                    color: form.timeSlot === slot ? '#00C896' : 'var(--text-muted)',
                     fontSize: 14, fontWeight: form.timeSlot === slot ? 600 : 400, cursor: 'pointer', transition: 'all 0.2s'
                   }}>{slot}</button>
                 ))}
@@ -244,11 +245,11 @@ export default function Book() {
         {step === 4 && (
           <div>
             <h2 style={{ fontSize: 28, marginBottom: 8 }}>Review & Pay</h2>
-            <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Confirm your booking then pay securely via Yoco</p>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Confirm your booking then pay securely via Yoco</p>
 
             {/* Summary card */}
-            <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 24, marginBottom: 24 }}>
-              <div style={{ fontSize: 12, color: '#9E9E9E', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Booking Summary</div>
+            <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, marginBottom: 24 }}>
+              <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Booking Summary</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <SummaryRow label="Service" value={selectedService?.name} />
                 <SummaryRow label="Property Size" value={`${form.sqm} m²`} />
@@ -257,8 +258,8 @@ export default function Book() {
                 <SummaryRow label="Date" value={new Date(form.date+'T00:00:00').toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'})} />
                 <SummaryRow label="Time" value={form.timeSlot} />
                 {form.specialInstructions && <SummaryRow label="Notes" value={form.specialInstructions} />}
-                <div style={{ borderTop: '1px solid #E8E8E8', paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: '#6B6B6B', fontWeight: 500 }}>Total Amount</span>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>Total Amount</span>
                   <span style={{ color: '#00C896', fontWeight: 800, fontSize: 28, fontFamily: 'Inter' }}>{formatCurrency(price)}</span>
                 </div>
               </div>
@@ -271,22 +272,22 @@ export default function Book() {
             )}
 
             {/* Pay button */}
-            <div style={{ background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 16, padding: 28 }}>
+            <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                 <Icon name="lock" size={26} color="#00C896" />
                 <div>
-                  <div style={{ fontWeight: 600, color: '#000000', fontSize: 16 }}>Secure Payment via Yoco</div>
-                  <div style={{ fontSize: 13, color: '#6B6B6B', marginTop: 2 }}>You'll be redirected to Yoco's secure payment page</div>
+                  <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 16 }}>Secure Payment via Yoco</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>You'll be redirected to Yoco's secure payment page</div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
                 {['Visa / Mastercard', 'Instant EFT', 'SnapScan'].map(m => (
-                  <span key={m} style={{ background: '#EEEEEE', border: '1px solid #E8E8E8', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: '#6B6B6B' }}>{m}</span>
+                  <span key={m} style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: 'var(--text-muted)' }}>{m}</span>
                 ))}
               </div>
 
-              <p style={{ fontSize: 12, color: '#9E9E9E', marginTop: 4 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
                 Powered by Yoco · PCI DSS Compliant · 256-bit SSL
               </p>
             </div>
@@ -298,11 +299,11 @@ export default function Book() {
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <div style={{ width: 80, height: 80, borderRadius: '50%', margin: '0 auto 24px', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>✓</div>
             <h2 style={{ fontSize: 32, marginBottom: 12 }}>Booking Received!</h2>
-            <p style={{ color: '#6B6B6B', fontSize: 16, marginBottom: 24 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 16, marginBottom: 24 }}>
               Your booking has been saved. Complete payment to confirm.
             </p>
             <div style={{ display: 'inline-block', background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.25)', borderRadius: 12, padding: '10px 24px', marginBottom: 32 }}>
-              <span style={{ color: '#6B6B6B', fontSize: 13 }}>Booking ID: </span>
+              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Booking ID: </span>
               <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Inter' }}>{bookingId}</span>
             </div>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -317,15 +318,15 @@ export default function Book() {
           <div className="book-cta-bar">
             <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 14 }}>
               <button onClick={() => step > 1 ? setStep(s => s - 1) : navigate('/')} aria-label="Back" style={{
-                width: 48, height: 48, borderRadius: '50%', background: '#F6F6F6',
-                color: '#000000', fontSize: 18, flexShrink: 0, fontWeight: 700
+                width: 48, height: 48, borderRadius: '50%', background: 'var(--tile)',
+                color: 'var(--text)', fontSize: 18, flexShrink: 0, fontWeight: 700
               }}>←</button>
               {selectedService && (
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, color: '#6B6B6B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {step === 4 ? 'Total to pay' : 'Estimated total'}
                   </div>
-                  <div style={{ fontSize: 21, fontWeight: 800, color: '#000000', letterSpacing: '-0.01em' }}>
+                  <div style={{ fontSize: 21, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.01em' }}>
                     {formatCurrency(price)}
                   </div>
                 </div>
@@ -338,7 +339,7 @@ export default function Book() {
               ) : (
                 <button onClick={handlePayment} disabled={loading} className="btn-primary"
                   style={{ padding: '15px 26px', fontSize: 16 }}>
-                  {loading ? 'Processing…' : 'Pay with Yoco'}
+                  {loading ? <><PinSpinner size={20} variant="mono" /> Processing…</> : 'Pay with Yoco'}
                 </button>
               )}
             </div>
@@ -350,14 +351,14 @@ export default function Book() {
 }
 
 function FormField({ label, children }) {
-  return <div><label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#6B6B6B', marginBottom: 7 }}>{label}</label>{children}</div>
+  return <div><label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 7 }}>{label}</label>{children}</div>
 }
 
 function SummaryRow({ label, value, highlight }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
-      <span style={{ color: '#6B6B6B', fontSize: 14, flexShrink: 0 }}>{label}</span>
-      <span style={{ color: highlight ? '#00C896' : '#000000', fontSize: 14, fontWeight: highlight ? 700 : 500, textAlign: 'right' }}>{value}</span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 14, flexShrink: 0 }}>{label}</span>
+      <span style={{ color: highlight ? '#00C896' : 'var(--text)', fontSize: 14, fontWeight: highlight ? 700 : 500, textAlign: 'right' }}>{value}</span>
     </div>
   )
 }

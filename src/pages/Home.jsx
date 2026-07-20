@@ -16,7 +16,7 @@ const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
 // Customer position — small dark dot with white ring
 const userDot = L.divIcon({
   className: '',
-  html: '<div style="width:16px;height:16px;border-radius:50%;background:#0D1117;border:3px solid #FFFFFF;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>',
+  html: '<div style="width:16px;height:16px;border-radius:50%;background:var(--text);border:3px solid #FFFFFF;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>',
   iconSize: [16, 16], iconAnchor: [8, 8]
 })
 
@@ -44,7 +44,7 @@ const cleanerPin = (avatarUrl) => L.divIcon({
 const cleanerCard = (name, rating, eta) => L.divIcon({
   className: '',
   html: `<div style="background:#FFFFFF;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,0.18);padding:10px 14px;white-space:nowrap;font-family:Inter,sans-serif;">
-    <div style="font-weight:700;font-size:14px;color:#0D1117;">${escapeHtml(name)} <span style="color:#C46A00;">${escapeHtml(rating)} ★</span></div>
+    <div style="font-weight:700;font-size:14px;color:var(--text);">${escapeHtml(name)} <span style="color:#C46A00;">${escapeHtml(rating)} ★</span></div>
     <div style="color:#00C896;font-weight:600;font-size:12.5px;margin-top:2px;">Arriving in ${eta} mins</div>
   </div>`,
   iconSize: [0, 0], iconAnchor: [-16, 92]
@@ -176,8 +176,8 @@ export default function Home() {
     <div className="home-screen">
       {/* ── Location card ────────────────────────────────────── */}
       <div style={{
-        margin: '14px 20px 10px', background: '#FFFFFF', borderRadius: 16,
-        border: '1px solid #F0F0F0', boxShadow: 'var(--shadow-card)',
+        margin: '14px 20px 10px', background: 'var(--surface)', borderRadius: 16,
+        border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)',
         padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12
       }}>
         <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(0,200,150,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -186,18 +186,18 @@ export default function Home() {
           </svg>
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 12, color: '#9E9E9E', marginBottom: 1 }}>Your Location</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#0D1117', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{city}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 1 }}>Your Location</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{city}</div>
         </div>
       </div>
 
       {/* ── "Where would you like…" row ──────────────────────── */}
       <Link to={user ? '/book' : '/signup'} style={{
         margin: '0 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        background: '#F6F6F6', borderRadius: 14, padding: '15px 16px'
+        background: 'var(--tile)', borderRadius: 14, padding: '15px 16px'
       }}>
-        <span style={{ fontSize: 14.5, fontWeight: 500, color: '#6B6B6B' }}>Where would you like cleaning service?</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D1117" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <span style={{ fontSize: 14.5, fontWeight: 500, color: 'var(--text-muted)' }}>Where would you like cleaning service?</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M9 18l6-6-6-6" />
         </svg>
       </Link>
@@ -205,10 +205,10 @@ export default function Home() {
       {/* ── Map hero with bottom sheet ───────────────────────── */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         <MapContainer
-          className="home-map"
+          className="app-map"
           center={[userPos.lat, userPos.lng]} zoom={14}
           zoomControl={false} scrollWheelZoom={false}
-          style={{ height: '100%', width: '100%', background: '#EEEEEE' }}
+          style={{ height: '100%', width: '100%', background: 'var(--tile-2)' }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -240,46 +240,46 @@ export default function Home() {
         {/* Bottom sheet */}
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000,
-          background: '#FFFFFF', borderRadius: '24px 24px 0 0',
+          background: 'var(--surface)', borderRadius: '24px 24px 0 0',
           boxShadow: '0 -10px 40px rgba(0,0,0,0.14)', padding: '10px 20px 16px'
         }}>
-          <div style={{ width: 40, height: 4, borderRadius: 2, background: '#E8E8E8', margin: '0 auto 12px' }} />
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 12px' }} />
 
           {/* Select Service */}
           <button onClick={() => setPickerOpen(true)} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: 'transparent', padding: '4px 0 12px', borderBottom: '1px solid #F0F0F0', textAlign: 'left'
+            background: 'transparent', padding: '4px 0 12px', borderBottom: '1px solid var(--border)', textAlign: 'left'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <ServiceBadge id={serviceId} size={40} iconSize={20} />
               <div>
-                <div style={{ fontSize: 12, color: '#9E9E9E', marginBottom: 2 }}>Select Service</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#0D1117' }}>{service.name}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 2 }}>Select Service</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{service.name}</div>
               </div>
             </div>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9E9E9E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />
             </svg>
           </button>
 
           {/* Size stepper */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: '1px solid #F0F0F0' }}>
-            <span style={{ fontSize: 14.5, color: '#6B6B6B' }}>How big is the space?</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 14.5, color: 'var(--text-muted)' }}>How big is the space?</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button onClick={() => setSqm(v => Math.max(10, v - 10))} aria-label="Smaller" style={stepBtn}>−</button>
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#0D1117', minWidth: 64, textAlign: 'center' }}>{sqm} m²</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', minWidth: 64, textAlign: 'center' }}>{sqm} m²</span>
               <button onClick={() => setSqm(v => Math.min(2000, v + 10))} aria-label="Bigger" style={stepBtn}>+</button>
             </div>
           </div>
 
           {/* Estimated price */}
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '12px 0 14px' }}>
-            <span style={{ fontSize: 14.5, color: '#6B6B6B', paddingBottom: 6 }}>Estimated Price</span>
+            <span style={{ fontSize: 14.5, color: 'var(--text-muted)', paddingBottom: 6 }}>Estimated Price</span>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 34, fontWeight: 800, color: '#00C896', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
                 {formatCurrency(price)}
               </div>
-              <div style={{ fontSize: 12, color: '#9E9E9E' }}>R{service.pricePerSqm}/m²</div>
+              <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>R{service.pricePerSqm}/m²</div>
             </div>
           </div>
 
@@ -294,20 +294,20 @@ export default function Home() {
       {pickerOpen && (
         <div onClick={() => setPickerOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1200, display: 'flex', alignItems: 'flex-end' }}>
           <div onClick={e => e.stopPropagation()} style={{
-            width: '100%', maxWidth: 640, margin: '0 auto', background: '#FFFFFF',
+            width: '100%', maxWidth: 640, margin: '0 auto', background: 'var(--surface)',
             borderRadius: '24px 24px 0 0', padding: `14px 20px calc(20px + var(--sab))`, maxHeight: '70vh', overflowY: 'auto'
           }}>
-            <div style={{ width: 40, height: 4, borderRadius: 2, background: '#E8E8E8', margin: '0 auto 14px' }} />
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 14px' }} />
             <h3 style={{ fontSize: 19, marginBottom: 10 }}>Select Service</h3>
             {SERVICES.map(s => (
               <button key={s.id} onClick={() => { setServiceId(s.id); setPickerOpen(false) }} style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '13px 4px',
-                background: 'transparent', borderBottom: '1px solid #F5F5F5', textAlign: 'left'
+                background: 'transparent', borderBottom: '1px solid var(--border)', textAlign: 'left'
               }}>
                 <ServiceBadge id={s.id} size={40} iconSize={20} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#0D1117' }}>{s.name}</div>
-                  <div style={{ fontSize: 12.5, color: '#9E9E9E' }}>R{s.pricePerSqm}/m² · min {s.minSqm} m²</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>{s.name}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-dim)' }}>R{s.pricePerSqm}/m² · min {s.minSqm} m²</div>
                 </div>
                 {s.id === serviceId && (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00C896" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -325,7 +325,7 @@ export default function Home() {
 }
 
 const stepBtn = {
-  width: 34, height: 34, borderRadius: '50%', background: '#F6F6F6',
-  border: '1px solid #E8E8E8', color: '#0D1117', fontSize: 18, fontWeight: 600,
+  width: 34, height: 34, borderRadius: '50%', background: 'var(--tile)',
+  border: '1px solid var(--border)', color: 'var(--text)', fontSize: 18, fontWeight: 600,
   display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
 }

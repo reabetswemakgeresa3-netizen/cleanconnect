@@ -88,15 +88,15 @@ export default function WorkerRegister() {
   }
 
   return (
-    <div style={{ paddingTop: 68, minHeight: '100vh', background: '#FFFFFF' }}>
+    <div style={{ paddingTop: 68, minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '40px 24px 80px' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><Logo variant="tile" size={64} /></div>
           <h1 style={{ fontSize: 30, marginBottom: 8 }}>Become a CleanConnect Worker</h1>
-          <p style={{ color: '#6B6B6B' }}>Register once, get assigned jobs, earn on your schedule</p>
+          <p style={{ color: 'var(--text-muted)' }}>Register once, get assigned jobs, earn on your schedule</p>
         </div>
 
-        <div style={{ background: '#FFFFFF', border: '1px solid #EEEEEE', borderRadius: 20, padding: 36, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--tile-2)', borderRadius: 20, padding: 36, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, color: '#E11900', fontSize: 14 }}>{error}</div>
@@ -106,19 +106,19 @@ export default function WorkerRegister() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{
                   width: 72, height: 72, borderRadius: '50%', flexShrink: 0, overflow: 'hidden',
-                  background: '#F6F6F6', border: '1.5px solid #E8E8E8',
+                  background: 'var(--tile)', border: '1.5px solid var(--border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30
                 }}>
                   {photoPreview
                     ? <img src={photoPreview} alt="Your profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <Icon name="camera" size={26} color="#9E9E9E" />}
+                    : <Icon name="camera" size={26} color="var(--text-dim)" />}
                 </div>
                 <div>
                   <label className="btn-outline" style={{ cursor: 'pointer', display: 'inline-block', padding: '10px 18px', fontSize: 14 }}>
                     {photo ? 'Change photo' : 'Upload a photo'}
                     <input type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
                   </label>
-                  <p style={{ fontSize: 12, color: '#9E9E9E', marginTop: 8 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 8 }}>
                     A clear, friendly face photo gets you more jobs. Max 5 MB.
                   </p>
                 </div>
@@ -171,13 +171,13 @@ export default function WorkerRegister() {
               style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16 }}>
               {loading ? 'Registering...' : 'Register as a Worker →'}
             </button>
-            <p style={{ fontSize: 12, color: '#9E9E9E', textAlign: 'center', marginTop: 12 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', marginTop: 12 }}>
               Your profile will be reviewed and verified by the CleanConnect team.
             </p>
           </form>
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: 24, color: '#6B6B6B', fontSize: 15 }}>
+        <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)', fontSize: 15 }}>
           Already registered? <Link to="/worker" style={{ color: '#00C896', fontWeight: 500 }}>Go to your jobs</Link>
         </p>
       </div>
@@ -188,7 +188,7 @@ export default function WorkerRegister() {
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#6B6B6B', marginBottom: 8 }}>{label}</label>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 8 }}>{label}</label>
       {children}
     </div>
   )
@@ -198,9 +198,9 @@ function Chip({ active, onClick, children }) {
   return (
     <button type="button" onClick={onClick} style={{
       padding: '8px 14px', borderRadius: 100, fontSize: 13, cursor: 'pointer',
-      border: `1.5px solid ${active ? '#00C896' : '#E8E8E8'}`,
+      border: `1.5px solid ${active ? '#00C896' : 'var(--border)'}`,
       background: active ? 'rgba(0,200,150,0.1)' : 'transparent',
-      color: active ? '#00C896' : '#6B6B6B', transition: 'all 0.2s'
+      color: active ? '#00C896' : 'var(--text-muted)', transition: 'all 0.2s'
     }}>{children}</button>
   )
 }

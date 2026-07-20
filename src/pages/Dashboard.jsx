@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { SERVICES, STATUS_CONFIG, formatCurrency } from '../data/services'
 import LiveTrackingMap from '../components/LiveTrackingMap'
 import { Icon, ServiceBadge } from '../components/Icons'
+import PinSpinner from '../components/PinSpinner'
 
 const DEMO_BOOKINGS = [
   {
@@ -106,7 +107,7 @@ export default function Dashboard() {
             <h1 style={{ fontSize: 32, marginBottom: 6 }}>
               Hey, {userName.split(' ')[0]}
             </h1>
-            <p style={{ color: '#6B6B6B', fontSize: 16 }}>Manage and track all your cleaning bookings</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 16 }}>Manage and track all your cleaning bookings</p>
           </div>
           <Link to="/book" className="btn-primary">+ New Booking</Link>
         </div>
@@ -114,20 +115,20 @@ export default function Dashboard() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px,1fr))', gap: 16, marginBottom: 36 }}>
           {[
-            { label: 'Total Bookings', value: stats.total, icon: 'clipboard', color: '#6B6B6B' },
+            { label: 'Total Bookings', value: stats.total, icon: 'clipboard', color: 'var(--text-muted)' },
             { label: 'Completed', value: stats.completed, icon: 'checkCircle', color: '#00C896' },
             { label: 'Upcoming', value: stats.upcoming, icon: 'calendar', color: '#276EF1' },
             { label: 'Total Spent', value: formatCurrency(stats.spent), icon: 'card', color: '#00C896' }
           ].map(stat => (
             <div key={stat.label} style={{
-              background: '#F6F6F6', border: '1px solid #E8E8E8',
+              background: 'var(--tile)', border: '1px solid var(--border)',
               borderRadius: 14, padding: '20px'
             }}>
               <div style={{ marginBottom: 8 }}><Icon name={stat.icon} size={22} color={stat.color} /></div>
               <div style={{ fontSize: 24, fontWeight: 800, fontFamily: 'Inter', color: stat.color, marginBottom: 4 }}>
                 {stat.value}
               </div>
-              <div style={{ fontSize: 13, color: '#9E9E9E' }}>{stat.label}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-dim)' }}>{stat.label}</div>
             </div>
           ))}
         </div>
@@ -145,9 +146,9 @@ export default function Dashboard() {
             <button key={f.id} onClick={() => setFilter(f.id)}
               style={{
                 padding: '8px 18px', borderRadius: 100,
-                border: `1.5px solid ${filter === f.id ? '#00C896' : '#E8E8E8'}`,
+                border: `1.5px solid ${filter === f.id ? '#00C896' : 'var(--border)'}`,
                 background: filter === f.id ? 'rgba(0,200,150,0.1)' : 'transparent',
-                color: filter === f.id ? '#00C896' : '#6B6B6B',
+                color: filter === f.id ? '#00C896' : 'var(--text-muted)',
                 fontSize: 14, cursor: 'pointer', transition: 'all 0.2s'
               }}>{f.label}</button>
           ))}
@@ -155,8 +156,8 @@ export default function Dashboard() {
 
         {/* Bookings list */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px', color: '#6B6B6B' }}>
-            <div style={{ marginBottom: 12 }}><Icon name="refresh" size={28} color="#C9C9C9" /></div>
+          <div style={{ textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+            <PinSpinner size={36} style={{ marginBottom: 12 }} />
             Loading your bookings...
           </div>
         ) : filtered.length === 0 ? (
@@ -187,18 +188,18 @@ function BookingCard({ booking, onClick }) {
 
   return (
     <div onClick={onClick} style={{
-      background: '#F6F6F6', border: '1px solid #E8E8E8',
+      background: 'var(--tile)', border: '1px solid var(--border)',
       borderRadius: 16, padding: '20px 24px', cursor: 'pointer',
       transition: 'all 0.2s', display: 'flex', gap: 20, alignItems: 'center',
       flexWrap: 'wrap'
     }}
     onMouseEnter={e => { e.currentTarget.style.borderColor = '#00C896'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,200,150,0.08)' }}
-    onMouseLeave={e => { e.currentTarget.style.borderColor = '#E8E8E8'; e.currentTarget.style.boxShadow = 'none' }}
+    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none' }}
     >
       {/* Service icon */}
       <div style={{
         width: 52, height: 52, borderRadius: 12,
-        background: '#EEEEEE', border: '1px solid #E8E8E8',
+        background: 'var(--tile-2)', border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 26, flexShrink: 0
       }}><ServiceBadge id={booking.service_id} size={44} iconSize={22} /></div>
@@ -206,7 +207,7 @@ function BookingCard({ booking, onClick }) {
       {/* Main info */}
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <h3 style={{ fontSize: 16, color: '#000000' }}>{booking.service_name}</h3>
+          <h3 style={{ fontSize: 16, color: 'var(--text)' }}>{booking.service_name}</h3>
           <span className={`badge ${statusConf.color}`} style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12 }}>
             {statusConf.label}
           </span>
@@ -229,7 +230,7 @@ function BookingCard({ booking, onClick }) {
         </div>
       </div>
 
-      <div style={{ color: '#9E9E9E', fontSize: 18, flexShrink: 0 }}>›</div>
+      <div style={{ color: 'var(--text-dim)', fontSize: 18, flexShrink: 0 }}>›</div>
     </div>
   )
 }
@@ -253,7 +254,7 @@ function BookingModal({ booking, onClose }) {
       backdropFilter: 'blur(4px)'
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        background: '#F6F6F6', border: '1px solid #E8E8E8', borderRadius: 20,
+        background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 20,
         width: '100%', maxWidth: 540, maxHeight: '85vh', overflowY: 'auto',
         padding: 32
       }}>
@@ -267,14 +268,14 @@ function BookingModal({ booking, onClose }) {
             <span className={`badge ${statusConf.color}`}>{statusConf.label}</span>
           </div>
           <button onClick={onClose} style={{
-            background: '#EEEEEE', border: '1px solid #E8E8E8', color: '#6B6B6B',
+            background: 'var(--tile-2)', border: '1px solid var(--border)', color: 'var(--text-muted)',
             width: 34, height: 34, borderRadius: 8, cursor: 'pointer', fontSize: 16
           }}>✕</button>
         </div>
 
         {/* Booking ID */}
-        <div style={{ background: '#EEEEEE', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ color: '#9E9E9E', fontSize: 13 }}>Booking Reference</span>
+        <div style={{ background: 'var(--tile-2)', borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ color: 'var(--text-dim)', fontSize: 13 }}>Booking Reference</span>
           <span style={{ color: '#00C896', fontWeight: 700, fontFamily: 'Inter', fontSize: 14 }}>{booking.id}</span>
         </div>
 
@@ -289,9 +290,9 @@ function BookingModal({ booking, onClose }) {
             { label: 'Amount', value: formatCurrency(booking.amount) },
             { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : 'Pending' }
           ].map(item => (
-            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #EEEEEE' }}>
-              <span style={{ color: '#6B6B6B', fontSize: 14 }}>{item.label}</span>
-              <span style={{ color: '#000000', fontSize: 14, fontWeight: 500 }}>{item.value}</span>
+            <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tile-2)' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>{item.label}</span>
+              <span style={{ color: 'var(--text)', fontSize: 14, fontWeight: 500 }}>{item.value}</span>
             </div>
           ))}
         </div>
@@ -299,7 +300,7 @@ function BookingModal({ booking, onClose }) {
         {/* Live cleaner tracking */}
         {booking.status === 'in-progress' && booking.cleaner_id && (
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 12, color: '#9E9E9E', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               <Icon name="radio" size={16} color="#00C896" style={{ verticalAlign: '-2px', marginRight: 6 }} />Track Your Cleaner
             </div>
             <LiveTrackingMap cleanerId={booking.cleaner_id} cleanerName={booking.cleaner_assigned} />
@@ -308,7 +309,7 @@ function BookingModal({ booking, onClose }) {
 
         {/* Progress timeline */}
         <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 12, color: '#9E9E9E', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Service Progress
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -316,14 +317,14 @@ function BookingModal({ booking, onClose }) {
               <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{
                   width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                  background: s.done ? '#00C896' : '#EEEEEE',
-                  border: `2px solid ${s.done ? '#00C896' : '#E8E8E8'}`,
+                  background: s.done ? '#00C896' : 'var(--tile-2)',
+                  border: `2px solid ${s.done ? '#00C896' : 'var(--border)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 10, color: s.done ? '#FFFFFF' : '#9E9E9E', fontWeight: 700
+                  fontSize: 10, color: s.done ? '#FFFFFF' : 'var(--text-dim)', fontWeight: 700
                 }}>
                   {s.done ? '✓' : i + 1}
                 </div>
-                <span style={{ fontSize: 14, color: s.done ? '#000000' : '#9E9E9E', fontWeight: s.done ? 500 : 400 }}>
+                <span style={{ fontSize: 14, color: s.done ? 'var(--text)' : 'var(--text-dim)', fontWeight: s.done ? 500 : 400 }}>
                   {s.label}
                 </span>
               </div>
@@ -337,8 +338,8 @@ function BookingModal({ booking, onClose }) {
 
 function InfoChip({ icon, text }) {
   return (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#6B6B6B' }}>
-      <Icon name={icon} size={13} color="#9E9E9E" /> {text}
+    <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: 'var(--text-muted)' }}>
+      <Icon name={icon} size={13} color="var(--text-dim)" /> {text}
     </span>
   )
 }
@@ -346,9 +347,9 @@ function InfoChip({ icon, text }) {
 function EmptyState() {
   return (
     <div style={{ textAlign: 'center', padding: '80px 24px' }}>
-      <div style={{ marginBottom: 20 }}><Icon name="bucket" size={52} color="#D5D5D5" /></div>
+      <div style={{ marginBottom: 20 }}><Icon name="bucket" size={52} color="var(--text-dim)" /></div>
       <h3 style={{ fontSize: 22, marginBottom: 10 }}>No bookings yet</h3>
-      <p style={{ color: '#6B6B6B', marginBottom: 28 }}>Book your first clean and it'll appear here</p>
+      <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Book your first clean and it'll appear here</p>
       <Link to="/book" className="btn-primary">Book a Clean →</Link>
     </div>
   )

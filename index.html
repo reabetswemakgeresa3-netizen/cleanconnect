@@ -2,9 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Runs synchronously before any CSS/paint so the correct theme is
+      // active from the very first frame — no light-mode flash on load.
+      (function () {
+        try {
+          var stored = localStorage.getItem('cc-theme') || 'system';
+          var dark = stored === 'dark' || (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+        } catch (e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="CleanConnect — South Africa's Professional Cleaning Booking Platform." />
-    <meta name="theme-color" content="#00C896" />
+    <meta id="theme-color-meta" name="theme-color" content="#FFFFFF" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -43,7 +43,11 @@ const PATHS = {
   zap: <path d="M13 2 4.5 13.5H11L9.5 22 18.5 10H12Z" />,
   shield: <><path d="M12 22s8-3.5 8-10V5.5L12 2 4 5.5V12c0 6.5 8 10 8 10Z" /><path d="m9 11.6 2.2 2.2 4-4.2" /></>,
   tag: <><path d="M12.6 2.6 21 11a2 2 0 0 1 0 2.8l-6.6 6.6a2 2 0 0 1-2.8 0L3.2 12A2 2 0 0 1 2.6 10.6V4.6a2 2 0 0 1 2-2h6a2 2 0 0 1 1.4.6Z" /><circle cx="8" cy="8" r="1.4" /></>,
-  info: <><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M12 11.5V16" /></>
+  info: <><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M12 11.5V16" /></>,
+  sun: <><circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2.3M12 19.2v2.3M4.5 12H2.2M21.8 12h-2.3M5.7 5.7l1.6 1.6M16.7 16.7l1.6 1.6M18.3 5.7l-1.6 1.6M7.3 16.7l-1.6 1.6" /></>,
+  moon: <path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2Z" />,
+  device: <><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M11 18.2h2" /></>,
+  settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V19a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 17.36a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z" /></>
 }
 
 // Which line icon represents each cleaning service
@@ -94,7 +98,7 @@ export function InitialsAvatar({ name, size = 64, fontSize }) {
   const initials = String(name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('')
   return (
     <div style={{
-      width: size, height: size, borderRadius: '50%', background: '#E6F9F4', color: '#00A87E',
+      width: size, height: size, borderRadius: '50%', background: 'rgba(0,200,150,0.14)', color: '#00A87E',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontWeight: 700, fontSize: fontSize || Math.round(size * 0.38), letterSpacing: '0.02em'
     }}>

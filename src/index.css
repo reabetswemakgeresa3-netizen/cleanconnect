@@ -7,6 +7,7 @@
   --primary-dark: #00A87E;
   --danger: #E11900;
   --bg: #FFFFFF;
+  --surface: #FFFFFF;
   --tile: #F6F6F6;
   --tile-2: #EEEEEE;
   --border: #E8E8E8;
@@ -23,6 +24,25 @@
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
+
+  color-scheme: light;
+}
+
+/* Dark mode — same accent, charcoal surfaces. Applied via data-theme on <html>,
+   set synchronously in index.html before first paint to avoid a flash. */
+[data-theme="dark"] {
+  --bg: #0D1117;
+  --surface: #161B22;
+  --tile: #161B22;
+  --tile-2: #1E2530;
+  --border: #2E3A4E;
+  --text: #E8EDF4;
+  --text-muted: #9BA7B4;
+  --text-dim: #6B7684;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 4px 18px rgba(0,0,0,0.28);
+  --shadow-float: 0 4px 24px rgba(0,0,0,0.45);
+
+  color-scheme: dark;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,7 +71,7 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #DDDDDD; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 .btn-primary {
   background: var(--primary);
@@ -97,7 +117,7 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
   font-size: 15px;
   transition: border-color 0.2s, background 0.2s;
 }
-.input-field:focus { border-color: var(--text); background: #FFFFFF; }
+.input-field:focus { border-color: var(--text); background: var(--surface); }
 .input-field::placeholder { color: var(--text-dim); }
 
 .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; }
@@ -138,7 +158,7 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
   bottom: 0; left: 0; right: 0;
   z-index: 150;
   display: none;
-  background: #FFFFFF;
+  background: var(--surface);
   border-top: 1px solid var(--border);
   padding: 6px calc(8px + var(--sar)) calc(6px + var(--sab)) calc(8px + var(--sal));
 }
@@ -173,7 +193,7 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: #FFFFFF;
+  background: var(--bg);
 }
 @media (max-width: 768px) {
   .home-screen {
@@ -181,15 +201,22 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
     height: calc(100dvh - var(--sat) - 74px - var(--sab));
   }
 }
-/* Light grayscale map tiles to match the clean Uber look */
-.home-map .leaflet-tile-pane { filter: grayscale(1) contrast(0.92) brightness(1.06); }
-.home-map .leaflet-control-attribution { font-size: 9px; opacity: 0.55; }
+/* Grayscale map tiles to match the clean Uber look; inverted for dark mode
+   so the basemap matches the surrounding charcoal chrome. Markers are plain
+   DOM elements outside .leaflet-tile-pane, so this filter never touches them. */
+.app-map .leaflet-tile-pane { filter: grayscale(1) contrast(0.92) brightness(1.06); }
+.app-map .leaflet-control-attribution { font-size: 9px; opacity: 0.55; }
+[data-theme="dark"] .app-map .leaflet-tile-pane {
+  filter: grayscale(0.4) invert(0.9) contrast(0.85) hue-rotate(180deg) brightness(0.95);
+}
+[data-theme="dark"] .app-map .leaflet-control-attribution { background: rgba(22,27,34,0.7); color: #9BA7B4; }
+[data-theme="dark"] .app-map .leaflet-control-attribution a { color: #9BA7B4; }
 
 /* Booking flow: CTA pinned to bottom on mobile, above the bottom nav */
 .book-cta-bar {
   position: sticky;
   bottom: 0;
-  background: #FFFFFF;
+  background: var(--surface);
   padding: 12px 0 8px;
 }
 @media (max-width: 768px) {

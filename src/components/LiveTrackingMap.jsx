@@ -79,11 +79,11 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
 
   if (!position) return (
     <div style={{
-      background: '#EEEEEE', border: '1px dashed #E8E8E8', borderRadius: 12,
+      background: 'var(--tile-2)', border: '1px dashed var(--border)', borderRadius: 12,
       padding: '28px 20px', textAlign: 'center'
     }}>
-      <div style={{ marginBottom: 10 }}><Icon name="radio" size={26} color="#9E9E9E" /></div>
-      <p style={{ color: '#6B6B6B', fontSize: 14 }}>
+      <div style={{ marginBottom: 10 }}><Icon name="radio" size={26} color="var(--text-dim)" /></div>
+      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
         Waiting for {cleanerName || 'your cleaner'} to share their live location...
       </p>
     </div>
@@ -91,10 +91,11 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
 
   return (
     <div>
-      <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #E8E8E8' }}>
+      <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
         <MapContainer
+          className="app-map"
           center={[position.lat, position.lng]} zoom={15} scrollWheelZoom={false}
-          style={{ height: 260, width: '100%', background: '#EEEEEE' }}
+          style={{ height: 260, width: '100%', background: 'var(--tile-2)' }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -106,7 +107,7 @@ export default function LiveTrackingMap({ cleanerId, cleanerName }) {
           <Recenter position={position} />
         </MapContainer>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: '#6B6B6B' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 13, color: 'var(--text-muted)' }}>
         <span style={{
           width: 8, height: 8, borderRadius: '50%', background: '#00C896',
           boxShadow: '0 0 0 3px rgba(0,200,150,0.2)', display: 'inline-block'

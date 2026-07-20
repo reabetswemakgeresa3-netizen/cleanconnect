@@ -51,7 +51,7 @@ export function Login() {
         </button>
       </form>
     )}
-    <p style={{ textAlign: 'center', marginTop: 24, color: '#6B6B6B', fontSize: 15 }}>
+    <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)', fontSize: 15 }}>
       Don't have an account?{' '}
       <Link to="/signup" style={{ color: '#00C896', fontWeight: 500 }}>Sign up free</Link>
     </p>
@@ -80,7 +80,7 @@ function GoogleButton() {
       <button type="button" onClick={handleClick} disabled={loading} style={{
         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
         padding: 14, borderRadius: 12, cursor: 'pointer', fontSize: 15, fontWeight: 500,
-        background: '#FFFFFF', border: '1px solid #E8E8E8', color: '#1F2937', transition: 'opacity 0.2s',
+        background: '#FFFFFF', border: '1px solid #DADCE0', color: '#1F2937', transition: 'opacity 0.2s',
         opacity: loading ? 0.7 : 1
       }}>
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -98,9 +98,9 @@ function GoogleButton() {
 function Divider() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
-      <div style={{ flex: 1, height: 1, background: '#E8E8E8' }} />
-      <span style={{ fontSize: 12, color: '#9E9E9E' }}>or</span>
-      <div style={{ flex: 1, height: 1, background: '#E8E8E8' }} />
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>or</span>
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
     </div>
   )
 }
@@ -109,13 +109,13 @@ function MethodToggle({ method, onChange }) {
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 24,
-      background: '#FFFFFF', border: '1px solid #E8E8E8', borderRadius: 12, padding: 4
+      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 4
     }}>
       {[{ id: 'email', label: 'Email' }, { id: 'phone', label: 'Phone OTP' }].map(m => (
         <button key={m.id} type="button" onClick={() => onChange(m.id)} style={{
           padding: '10px 8px', borderRadius: 9, border: 'none', cursor: 'pointer',
           background: method === m.id ? '#00C896' : 'transparent',
-          color: method === m.id ? '#FFFFFF' : '#6B6B6B',
+          color: method === m.id ? '#FFFFFF' : 'var(--text-muted)',
           fontSize: 14, fontWeight: method === m.id ? 600 : 400, transition: 'all 0.2s'
         }}>{m.label}</button>
       ))}
@@ -166,8 +166,8 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
   if (step === 'code') return (
     <form onSubmit={handleVerify}>
       {error && <ErrorBox message={error} />}
-      <p style={{ color: '#6B6B6B', fontSize: 14, marginBottom: 16 }}>
-        We sent a 6-digit code to <strong style={{ color: '#000000' }}>{e164}</strong>
+      <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 16 }}>
+        We sent a 6-digit code to <strong style={{ color: 'var(--text)' }}>{e164}</strong>
       </p>
       <Field label="Verification code">
         <input className="input-field" type="text" inputMode="numeric" autoComplete="one-time-code"
@@ -180,7 +180,7 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
         {loading ? 'Verifying...' : 'Verify & Sign In →'}
       </button>
       <button type="button" onClick={() => { setStep('phone'); setCode(''); setError('') }}
-        style={{ width: '100%', marginTop: 12, background: 'transparent', border: 'none', color: '#6B6B6B', fontSize: 14, cursor: 'pointer' }}>
+        style={{ width: '100%', marginTop: 12, background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer' }}>
         ← Use a different number
       </button>
     </form>
@@ -197,7 +197,7 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
         style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16 }}>
         {loading ? 'Sending code...' : 'Send Code via SMS →'}
       </button>
-      <p style={{ fontSize: 12, color: '#9E9E9E', textAlign: 'center', marginTop: 12 }}>
+      <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', marginTop: 12 }}>
         Standard SMS rates may apply. No password needed.
       </p>
     </form>
@@ -235,8 +235,8 @@ export function Signup() {
   if (success) return <AuthLayout title="Account Created!" subtitle="Check your email to confirm your account">
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}><Icon name="checkCircle" size={56} color="#00C896" /></div>
-      <p style={{ color: '#6B6B6B', lineHeight: 1.6, marginBottom: 24 }}>
-        We sent a confirmation email to <strong style={{ color: '#000000' }}>{form.email}</strong>.<br />
+      <p style={{ color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 24 }}>
+        We sent a confirmation email to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.<br />
         Click the link to activate your account.
       </p>
       <Link to="/login" className="btn-primary" style={{ justifyContent: 'center' }}>
@@ -288,10 +288,10 @@ export function Signup() {
         </button>
       </form>
     )}
-    <p style={{ fontSize: 12, color: '#9E9E9E', textAlign: 'center', marginTop: 12 }}>
+    <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', marginTop: 12 }}>
       By signing up, you agree to our Terms of Service and Privacy Policy.
     </p>
-    <p style={{ textAlign: 'center', marginTop: 20, color: '#6B6B6B', fontSize: 15 }}>
+    <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--text-muted)', fontSize: 15 }}>
       Already have an account?{' '}
       <Link to="/login" style={{ color: '#00C896', fontWeight: 500 }}>Sign in</Link>
     </p>
@@ -303,7 +303,7 @@ function AuthLayout({ title, subtitle, children }) {
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center',
       justifyContent: 'center', padding: '100px 24px 40px',
-      background: '#FFFFFF', position: 'relative', overflow: 'hidden'
+      background: 'var(--bg)', position: 'relative', overflow: 'hidden'
     }}>
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -319,12 +319,12 @@ function AuthLayout({ title, subtitle, children }) {
         </Link>
 
         <div style={{
-          background: '#FFFFFF', border: '1px solid #EEEEEE',
+          background: 'var(--surface)', border: '1px solid var(--tile-2)',
           borderRadius: 20, padding: '40px 36px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)'
         }}>
-          <h1 style={{ fontSize: 26, marginBottom: 6, color: '#000000' }}>{title}</h1>
-          <p style={{ color: '#6B6B6B', fontSize: 15, marginBottom: 28 }}>{subtitle}</p>
+          <h1 style={{ fontSize: 26, marginBottom: 6, color: 'var(--text)' }}>{title}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 15, marginBottom: 28 }}>{subtitle}</p>
           {children}
         </div>
       </div>
@@ -335,7 +335,7 @@ function AuthLayout({ title, subtitle, children }) {
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#6B6B6B', marginBottom: 7 }}>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 7 }}>
         {label}
       </label>
       {children}
