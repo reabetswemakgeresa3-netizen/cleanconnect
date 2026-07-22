@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { SERVICES } from '../data/services'
 import { Icon, ServiceBadge } from '../components/Icons'
+import UserAvatar from '../components/UserAvatar'
+import Footer from '../components/Footer'
 
 const TILE_ORDER = ['residential', 'office', 'industrial', 'gardening', 'medical', 'carpet', 'postConstruction', 'event']
 const TILE_LABELS = {
@@ -171,11 +173,14 @@ export default function Home() {
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '18px 20px 130px' }}>
 
         {/* Greeting */}
-        <Motion.div {...fadeUp(0)} style={{ marginBottom: 18 }}>
-          <h1 style={{ fontSize: 26, letterSpacing: '-0.02em', marginBottom: 4 }}>
-            {greetingWord()}{firstName ? `, ${firstName}` : ''} 👋
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>Ready for a spotless space?</p>
+        <Motion.div {...fadeUp(0)} style={{ marginBottom: 18, display: 'flex', alignItems: 'center', gap: 14 }}>
+          {user && <UserAvatar size={52} editable />}
+          <div>
+            <h1 style={{ fontSize: 26, letterSpacing: '-0.02em', marginBottom: 4 }}>
+              {greetingWord()}{firstName ? `, ${firstName}` : ''} 👋
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>Ready for a spotless space?</p>
+          </div>
         </Motion.div>
 
         {/* Active booking card — only when there's a live job to show */}
@@ -297,6 +302,8 @@ export default function Home() {
             ))}
           </div>
         </Motion.div>
+
+        <div style={{ marginTop: 32 }}><Footer /></div>
       </div>
 
       {/* Floating Book Now — always visible, above the bottom nav */}

@@ -289,7 +289,8 @@ export function Signup() {
       </form>
     )}
     <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', marginTop: 12 }}>
-      By signing up, you agree to our Terms of Service and Privacy Policy.
+      By signing up you agree to our <Link to="/terms" style={{ color: '#00C896', fontWeight: 600 }}>Terms</Link> and{' '}
+      <Link to="/privacy" style={{ color: '#00C896', fontWeight: 600 }}>Privacy Policy</Link>.
     </p>
     <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--text-muted)', fontSize: 15 }}>
       Already have an account?{' '}

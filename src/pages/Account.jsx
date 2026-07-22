@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { formatSAPhone } from '../lib/phone'
 import { Icon } from '../components/Icons'
+import UserAvatar from '../components/UserAvatar'
 
 const ROWS = [
   { to: '/dashboard', icon: 'clipboard', label: 'My Bookings', sub: 'Track and manage your cleans' },
@@ -52,9 +53,7 @@ export default function Account() {
             <h1 style={{ fontSize: 32, marginBottom: 4 }}>{name}</h1>
             {contact && <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>{contact}</p>}
           </div>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#00C896', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, fontWeight: 800, color: '#FFFFFF', flexShrink: 0 }}>
-            {name[0]?.toUpperCase()}
-          </div>
+          <UserAvatar size={64} editable />
         </div>
 
         {/* Menu rows */}

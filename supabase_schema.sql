@@ -227,3 +227,52 @@ CREATE POLICY "Cleaners update own photo" ON storage.objects
 
 CREATE POLICY "Cleaner photos are public" ON storage.objects
   FOR SELECT USING (bucket_id = 'cleaner-photos');
+
+
+-- ============================================================
+-- V6 ADDITIONS — Profile photos, cancellation policy, contact form
+-- ============================================================
+
+-- Avatars bucket for customer/user profile pictures (profiles.avatar_url
+-- already existed since V1)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Users upload own avatar" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Users update own avatar" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Users delete own avatar" ON storage.objects
+  FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Avatars are publicly viewable" ON storage.objects
+  FOR SELECT USING (bucket_id = 'avatars');
+
+-- Allow a "pending-review" payment status for cancellations made inside the
+-- 4-hour refund window (fee may apply, flagged for manual review instead of
+-- an automatic refund)
+ALTER TABLE bookings DROP CONSTRAINT bookings_payment_status_check;
+ALTER TABLE bookings ADD CONSTRAINT bookings_payment_status_check
+  CHECK (payment_status IN ('unpaid', 'paid', 'refunded', 'pending-review'));
+
+-- Contact/support form submissions
+CREATE TABLE IF NOT EXISTS contact_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+
+-- Anyone (including logged-out visitors) can submit the contact form.
+-- Deliberately no SELECT policy: with RLS enabled and no read grant for
+-- anon/authenticated, submissions can only be read via the Supabase
+-- dashboard/service role — there's no in-app admin-role system to check
+-- against, so this is how "only admins can read them" is enforced here.
+CREATE POLICY "Anyone can submit a contact message" ON contact_messages
+  FOR INSERT WITH CHECK (true);

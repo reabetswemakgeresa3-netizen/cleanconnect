@@ -6,6 +6,12 @@ import { SERVICES, STATUS_CONFIG, formatCurrency } from '../data/services'
 import LiveTrackingMap from '../components/LiveTrackingMap'
 import { Icon, ServiceBadge } from '../components/Icons'
 import PinSpinner from '../components/PinSpinner'
+import UserAvatar from '../components/UserAvatar'
+import { getCancellationPolicy } from '../lib/cancellation'
+
+const PAYMENT_LABELS = {
+  paid: '✓ Paid', unpaid: 'Pending', refunded: 'Refunded', 'pending-review': 'Refund under review'
+}
 
 const DEMO_BOOKINGS = [
   {
@@ -87,6 +93,11 @@ export default function Dashboard() {
     }
   }
 
+  const handleCancelled = (updatedBooking) => {
+    setBookings(prev => prev.map(b => b.id === updatedBooking.id ? updatedBooking : b))
+    setSelectedBooking(updatedBooking)
+  }
+
   const filtered = filter === 'all' ? bookings : bookings.filter(b => b.status === filter)
 
   const stats = {
@@ -103,11 +114,14 @@ export default function Dashboard() {
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 24px 80px' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 36, flexWrap: 'wrap', gap: 20 }}>
-          <div>
-            <h1 style={{ fontSize: 32, marginBottom: 6 }}>
-              Hey, {userName.split(' ')[0]}
-            </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: 16 }}>Manage and track all your cleaning bookings</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <UserAvatar size={52} editable />
+            <div>
+              <h1 style={{ fontSize: 32, marginBottom: 6 }}>
+                Hey, {userName.split(' ')[0]}
+              </h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: 16 }}>Manage and track all your cleaning bookings</p>
+            </div>
           </div>
           <Link to="/book" className="btn-primary">+ New Booking</Link>
         </div>
@@ -177,7 +191,7 @@ export default function Dashboard() {
 
       {/* Detail Modal */}
       {selectedBooking && (
-        <BookingModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} />
+        <BookingModal booking={selectedBooking} onClose={() => setSelectedBooking(null)} onCancelled={handleCancelled} />
       )}
     </div>
   )
@@ -226,7 +240,7 @@ function BookingCard({ booking, onClick }) {
           {formatCurrency(booking.amount)}
         </div>
         <div style={{ fontSize: 12, color: booking.payment_status === 'paid' ? '#00C896' : '#C46A00', marginTop: 3 }}>
-          {booking.payment_status === 'paid' ? '✓ Paid' : 'Unpaid'}
+          {PAYMENT_LABELS[booking.payment_status] || 'Unpaid'}
         </div>
       </div>
 
@@ -235,8 +249,38 @@ function BookingCard({ booking, onClick }) {
   )
 }
 
-function BookingModal({ booking, onClose }) {
+function BookingModal({ booking, onClose, onCancelled }) {
   const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
+  const [confirmingCancel, setConfirmingCancel] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState('')
+  const canCancel = booking.status === 'pending' || booking.status === 'confirmed'
+  const policy = canCancel ? getCancellationPolicy(booking.booking_date, booking.time_slot) : null
+
+  const confirmCancel = async () => {
+    setCancelling(true)
+    setCancelError('')
+    const updates = { status: 'cancelled', payment_status: policy.newPaymentStatus }
+    try {
+      const { error } = await supabase.from('bookings').update(updates).eq('id', booking.id)
+      if (error) throw error
+      // Reuse the same WhatsApp notification path Admin uses for status changes
+      supabase.functions.invoke('send-whatsapp', {
+        body: {
+          type: 'status_update',
+          booking: { ...booking, ...updates },
+          customerPhone: booking.contact_phone,
+          customerName: booking.contact_name
+        }
+      }).catch(() => {})
+      onCancelled({ ...booking, ...updates })
+      setConfirmingCancel(false)
+    } catch {
+      setCancelError('Could not cancel this booking. Please try again.')
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   const steps = [
     { label: 'Booking Received', done: true },
@@ -288,7 +332,7 @@ function BookingModal({ booking, onClose }) {
             { label: 'Date', value: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
             { label: 'Time Window', value: booking.time_slot },
             { label: 'Amount', value: formatCurrency(booking.amount) },
-            { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : 'Pending' }
+            { label: 'Payment', value: PAYMENT_LABELS[booking.payment_status] || 'Pending' }
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--tile-2)' }}>
               <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>{item.label}</span>
@@ -296,6 +340,39 @@ function BookingModal({ booking, onClose }) {
             </div>
           ))}
         </div>
+
+        {/* Cancel booking */}
+        {canCancel && (
+          <div style={{ marginBottom: 24 }}>
+            {!confirmingCancel ? (
+              <button onClick={() => setConfirmingCancel(true)} style={{
+                width: '100%', padding: 14, borderRadius: 12, background: 'rgba(225,25,0,0.08)',
+                border: '1px solid rgba(225,25,0,0.25)', color: '#E11900', fontWeight: 700, fontSize: 14.5
+              }}>
+                Cancel Booking
+              </button>
+            ) : (
+              <div style={{ background: 'rgba(225,25,0,0.06)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 14, padding: 18 }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                  <Icon name="alertTriangle" size={20} color="#E11900" style={{ flexShrink: 0, marginTop: 1 }} />
+                  <p style={{ fontSize: 13.5, color: 'var(--text)', lineHeight: 1.6 }}>{policy.message}</p>
+                </div>
+                {cancelError && <p style={{ color: '#E11900', fontSize: 13, marginBottom: 10 }}>{cancelError}</p>}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => setConfirmingCancel(false)} disabled={cancelling} className="btn-outline" style={{ flex: 1, justifyContent: 'center', padding: 12 }}>
+                    Keep Booking
+                  </button>
+                  <button onClick={confirmCancel} disabled={cancelling} style={{
+                    flex: 1, padding: 12, borderRadius: 12, background: '#E11900', color: '#FFFFFF',
+                    fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                  }}>
+                    {cancelling ? <PinSpinner size={18} variant="mono" /> : 'Yes, Cancel'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Live cleaner tracking */}
         {booking.status === 'in-progress' && booking.cleaner_id && (

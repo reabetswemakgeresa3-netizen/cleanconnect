@@ -36,6 +36,9 @@ export default function BottomNav() {
   const isActive = (to) =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
+  // Legal reading-mode pages (Terms/Privacy) hide all app chrome, including this
+  if (location.pathname === '/terms' || location.pathname === '/privacy') return null
+
   return (
     <nav className="bottom-nav">
       {TABS.map(t => (

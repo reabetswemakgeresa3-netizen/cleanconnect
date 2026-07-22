@@ -3,6 +3,11 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Logo from './Logo'
 import { Icon } from './Icons'
+import UserAvatar from './UserAvatar'
+
+// Legal reading-mode pages render their own minimal back-button header
+// instead of the app chrome — no hamburger/bell, no bottom tab bar.
+const CHROME_HIDDEN_ROUTES = ['/terms', '/privacy']
 
 // One header for every page: hamburger menu · centered logo · notification bell.
 export default function Navbar() {
@@ -10,6 +15,8 @@ export default function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+
+  if (CHROME_HIDDEN_ROUTES.includes(location.pathname)) return null
 
   const handleSignOut = async () => {
     await signOut()
@@ -24,7 +31,8 @@ export default function Navbar() {
     { to: '/dashboard', label: 'My Bookings', icon: 'clipboard' },
     { to: '/worker', label: 'Worker Portal', icon: 'briefcase' },
     { to: '/account', label: 'Account', icon: 'user' },
-    { to: '/settings', label: 'Settings', icon: 'settings' }
+    { to: '/settings', label: 'Settings', icon: 'settings' },
+    { to: '/contact', label: 'Contact Us', icon: 'mail' }
   ]
 
   return (
@@ -76,12 +84,15 @@ export default function Navbar() {
             </div>
 
             {user && (
-              <div style={{ padding: '10px 10px 14px', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
-                  {user.user_metadata?.full_name || 'Welcome back'}
-                </div>
-                <div style={{ fontSize: 12.5, color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {user.email || user.phone || ''}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 10px 14px', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
+                <UserAvatar size={46} editable />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
+                    {user.user_metadata?.full_name || 'Welcome back'}
+                  </div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user.email || user.phone || ''}
+                  </div>
                 </div>
               </div>
             )}

@@ -20,6 +20,9 @@ import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 import WorkerDashboard from './pages/worker/WorkerDashboard'
 import WorkerRegister from './pages/worker/WorkerRegister'
+import Terms from './pages/Terms'
+import Privacy from './pages/Privacy'
+import Contact from './pages/Contact'
 
 const SPLASH_MIN_MS = 1500
 
@@ -51,6 +54,9 @@ function AppShell() {
         <Route path="/worker/register" element={<ProtectedRoute><WorkerRegister /></ProtectedRoute>} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/admin" element={<Admin />} />
       </Routes>
       <BottomNav />
