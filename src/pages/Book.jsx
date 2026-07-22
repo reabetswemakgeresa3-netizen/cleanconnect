@@ -1,5 +1,8 @@
-import { useState } from 'react'
-import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { useAuth } from '../context/AuthContext'
 import { Icon, ServiceBadge } from '../components/Icons'
 import PinSpinner from '../components/PinSpinner'
@@ -7,10 +10,32 @@ import { SERVICES, PROVINCES, calculatePrice, formatCurrency } from '../data/ser
 import { supabase } from '../lib/supabase'
 
 const STEPS = ['Service', 'Details', 'Schedule', 'Payment', 'Confirmation']
+const JHB = { lat: -26.2041, lng: 28.0473 }
+
+// Customer position — small dark dot with white ring
+const userDot = L.divIcon({
+  className: '',
+  html: '<div style="width:16px;height:16px;border-radius:50%;background:var(--text);border:3px solid #FFFFFF;box-shadow:0 2px 8px rgba(0,0,0,0.35)"></div>',
+  iconSize: [16, 16], iconAnchor: [8, 8]
+})
+
+// Nearby available cleaner — green dot
+const availableDot = L.divIcon({
+  className: '',
+  html: '<div style="width:14px;height:14px;border-radius:50%;background:#00C896;border:2.5px solid #FFFFFF;box-shadow:0 2px 8px rgba(0,200,150,0.5)"></div>',
+  iconSize: [14, 14], iconAnchor: [7, 7]
+})
+
+function Recenter({ position }) {
+  const map = useMap()
+  useEffect(() => {
+    if (position) map.panTo([position.lat, position.lng], { animate: true })
+  }, [position, map])
+  return null
+}
 
 export default function Book() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -18,8 +43,8 @@ export default function Book() {
   const [bookingId, setBookingId] = useState(null)
 
   const [form, setForm] = useState({
-    serviceId: searchParams.get('service') || '',
-    sqm: Math.max(10, Number(searchParams.get('sqm')) || 50),
+    serviceId: searchParams.get('service') || 'residential',
+    sqm: Math.max(10, Number(searchParams.get('sqm')) || 120),
     address: '', city: '', province: 'Gauteng',
     specialInstructions: '', date: '', timeSlot: '',
     contactName: user?.user_metadata?.full_name || '',
@@ -130,6 +155,21 @@ export default function Book() {
     return false
   }
 
+  // Step 1 (choosing service + size on the map) owns its own full-height
+  // layout and "Continue" action, so it skips the standard wrapper/progress
+  // header/bottom cta-bar used by the rest of the flow.
+  if (step === 1) {
+    return (
+      <ServiceMapStep
+        serviceId={form.serviceId}
+        sqm={form.sqm}
+        onSelectService={id => setVal('serviceId', id)}
+        onSqmChange={v => setVal('sqm', v)}
+        onContinue={() => setStep(2)}
+      />
+    )
+  }
+
   return (
     <div style={{ paddingTop: 64, minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px 170px' }}>
@@ -152,49 +192,11 @@ export default function Book() {
           </div>
         </div>
 
-        {/* STEP 1 — Service */}
-        {step === 1 && (
-          <div>
-            <h2 style={{ fontSize: 28, marginBottom: 8 }}>Choose a Service</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Select the type of cleaning you need</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px,1fr))', gap: 14 }}>
-              {SERVICES.map(service => (
-                <button key={service.id} onClick={() => setVal('serviceId', service.id)} style={{
-                  background: form.serviceId === service.id ? 'rgba(0,200,150,0.1)' : 'var(--tile)',
-                  border: `2px solid ${form.serviceId === service.id ? '#00C896' : 'var(--border)'}`,
-                  borderRadius: 14, padding: '20px 16px', textAlign: 'left', transition: 'all 0.2s', cursor: 'pointer'
-                }}>
-                  <div style={{ marginBottom: 10 }}><ServiceBadge id={service.id} size={48} iconSize={24} /></div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{service.name}</div>
-                  <div style={{ fontSize: 13, color: '#00C896', fontWeight: 700 }}>R{service.pricePerSqm}/m²</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* STEP 2 — Details */}
         {step === 2 && (
           <div>
             <h2 style={{ fontSize: 28, marginBottom: 8 }}>Property Details</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: 28 }}>Tell us about the space to be cleaned</p>
-            <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 24, marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 14, color: 'var(--text-muted)', marginBottom: 12, fontWeight: 500 }}>Property Size (m²)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <input type="range" min={selectedService?.minSqm||10} max={2000} value={form.sqm}
-                  onChange={e => setVal('sqm', Number(e.target.value))} style={{ flex: 1, accentColor: '#00C896' }} />
-                <div style={{ textAlign: 'center', minWidth: 80 }}>
-                  <input type="number" value={form.sqm} min={selectedService?.minSqm||10}
-                    onChange={e => setVal('sqm', Math.max(selectedService?.minSqm||10, Number(e.target.value)))}
-                    style={{ width: 80, background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, color: 'var(--text)', fontSize: 16, textAlign: 'center', fontWeight: 700 }} />
-                  <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 3 }}>m²</div>
-                </div>
-              </div>
-              <div style={{ marginTop: 16, padding: '14px 16px', background: 'var(--tile-2)', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Estimated Total</span>
-                <span style={{ color: '#00C896', fontSize: 22, fontWeight: 800, fontFamily: 'Inter' }}>{formatCurrency(price)}</span>
-              </div>
-            </div>
             <div style={{ display: 'grid', gap: 16 }}>
               <FormField label="Street Address"><input className="input-field" placeholder="123 Main Road" value={form.address} onChange={e => setVal('address', e.target.value)} /></FormField>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -314,10 +316,10 @@ export default function Book() {
         )}
 
         {/* Bottom sheet CTA — price + action pinned to bottom, like Uber's ride confirmation */}
-        {step < 5 && (
+        {step > 1 && step < 5 && (
           <div className="book-cta-bar">
             <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <button onClick={() => step > 1 ? setStep(s => s - 1) : navigate('/')} aria-label="Back" style={{
+              <button onClick={() => setStep(s => s - 1)} aria-label="Back" style={{
                 width: 48, height: 48, borderRadius: '50%', background: 'var(--tile)',
                 color: 'var(--text)', fontSize: 18, flexShrink: 0, fontWeight: 700
               }}>←</button>
@@ -348,6 +350,181 @@ export default function Book() {
       </div>
     </div>
   )
+}
+
+// ── STEP 1 — pick a service + property size on a live map of nearby cleaners ──
+function ServiceMapStep({ serviceId, sqm, onSelectService, onSqmChange, onContinue }) {
+  const [geoCity, setGeoCity] = useState('Johannesburg')
+  const [userPos, setUserPos] = useState(JHB)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [nearby, setNearby] = useState([])
+
+  const service = SERVICES.find(s => s.id === serviceId)
+  const price = calculatePrice(serviceId, sqm)
+
+  // Locate the user and label their city (fallback stays Johannesburg)
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+      const pos = { lat: coords.latitude, lng: coords.longitude }
+      setUserPos(pos)
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.lat}&lon=${pos.lng}`)
+        const j = await r.json()
+        const a = j.address || {}
+        const label = a.city || a.town || a.suburb || a.village || a.county
+        if (label) setGeoCity(label)
+      } catch { /* keep fallback city */ }
+    }, () => {}, { timeout: 8000 })
+  }, [])
+
+  // Show available cleaners around the user as green dots
+  useEffect(() => {
+    let cancelled = false
+    supabase.from('cleaners')
+      .select('id, current_lat, current_lng')
+      .eq('available', true).not('current_lat', 'is', null).limit(20)
+      .then(({ data }) => {
+        if (cancelled) return
+        if (data?.length) {
+          setNearby(data.map(c => ({ id: c.id, lat: c.current_lat, lng: c.current_lng })))
+        } else {
+          // Nothing sharing a location yet — sprinkle indicative dots nearby
+          const offsets = [[0.010, 0.007], [-0.007, 0.011], [0.005, -0.010], [-0.011, -0.005], [0.014, -0.002]]
+          setNearby(offsets.map(([dLat, dLng], i) => ({ id: `demo-${i}`, lat: userPos.lat + dLat, lng: userPos.lng + dLng })))
+        }
+      })
+    return () => { cancelled = true }
+  }, [userPos])
+
+  return (
+    <div className="home-screen">
+      {/* Location card */}
+      <div style={{
+        margin: '14px 20px 10px', background: 'var(--surface)', borderRadius: 16,
+        border: '1px solid var(--border)', boxShadow: 'var(--shadow-card)',
+        padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12
+      }}>
+        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(0,200,150,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#00C896">
+            <path d="M12 2C7.6 2 4 5.6 4 10c0 5.3 7 11.6 7.3 11.9a1 1 0 0 0 1.4 0C13 21.6 20 15.3 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+          </svg>
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 1 }}>Your Location</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{geoCity}</div>
+        </div>
+      </div>
+
+      {/* Map hero with bottom sheet */}
+      <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
+        <MapContainer
+          className="app-map"
+          center={[userPos.lat, userPos.lng]} zoom={14}
+          zoomControl={false} scrollWheelZoom={false}
+          style={{ height: '100%', width: '100%', background: 'var(--tile-2)' }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Recenter position={userPos} />
+          <Marker position={[userPos.lat, userPos.lng]} icon={userDot} interactive={false} />
+          {nearby.map(c => (
+            <Marker key={c.id} position={[c.lat, c.lng]} icon={availableDot} interactive={false} />
+          ))}
+        </MapContainer>
+
+        {/* Bottom sheet */}
+        <div style={{
+          position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1000,
+          background: 'var(--surface)', borderRadius: '24px 24px 0 0',
+          boxShadow: '0 -10px 40px rgba(0,0,0,0.14)', padding: '10px 20px 16px'
+        }}>
+          <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 12px' }} />
+
+          {/* Select Service */}
+          <button onClick={() => setPickerOpen(true)} style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: 'transparent', padding: '4px 0 12px', borderBottom: '1px solid var(--border)', textAlign: 'left'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <ServiceBadge id={serviceId} size={40} iconSize={20} />
+              <div>
+                <div style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 2 }}>Select Service</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{service.name}</div>
+              </div>
+            </div>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+
+          {/* Size stepper */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 0', borderBottom: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 14.5, color: 'var(--text-muted)' }}>How big is the space?</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button onClick={() => onSqmChange(Math.max(10, sqm - 10))} aria-label="Smaller" style={stepBtn}>−</button>
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', minWidth: 64, textAlign: 'center' }}>{sqm} m²</span>
+              <button onClick={() => onSqmChange(Math.min(2000, sqm + 10))} aria-label="Bigger" style={stepBtn}>+</button>
+            </div>
+          </div>
+
+          {/* Estimated price */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '12px 0 14px' }}>
+            <span style={{ fontSize: 14.5, color: 'var(--text-muted)', paddingBottom: 6 }}>Estimated Price</span>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 34, fontWeight: 800, color: '#00C896', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                {formatCurrency(price)}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>R{service.pricePerSqm}/m²</div>
+            </div>
+          </div>
+
+          <button onClick={onContinue} className="btn-primary"
+            style={{ width: '100%', padding: 17, fontSize: 17, borderRadius: 16, justifyContent: 'center' }}>
+            Continue
+          </button>
+        </div>
+      </div>
+
+      {/* Service picker sheet */}
+      {pickerOpen && (
+        <div onClick={() => setPickerOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1200, display: 'flex', alignItems: 'flex-end' }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', maxWidth: 640, margin: '0 auto', background: 'var(--surface)',
+            borderRadius: '24px 24px 0 0', padding: `14px 20px calc(20px + var(--sab))`, maxHeight: '70vh', overflowY: 'auto'
+          }}>
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 14px' }} />
+            <h3 style={{ fontSize: 19, marginBottom: 10 }}>Select Service</h3>
+            {SERVICES.map(s => (
+              <button key={s.id} onClick={() => { onSelectService(s.id); setPickerOpen(false) }} style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '13px 4px',
+                background: 'transparent', borderBottom: '1px solid var(--border)', textAlign: 'left'
+              }}>
+                <ServiceBadge id={s.id} size={40} iconSize={20} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>{s.name}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-dim)' }}>R{s.pricePerSqm}/m² · min {s.minSqm} m²</div>
+                </div>
+                {s.id === serviceId && (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00C896" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const stepBtn = {
+  width: 34, height: 34, borderRadius: '50%', background: 'var(--tile)',
+  border: '1px solid var(--border)', color: 'var(--text)', fontSize: 18, fontWeight: 600,
+  display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
 }
 
 function FormField({ label, children }) {
