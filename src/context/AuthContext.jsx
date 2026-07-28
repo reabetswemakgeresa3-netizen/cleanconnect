@@ -60,28 +60,29 @@ export function AuthProvider({ children }) {
     if (error) throw error
   }
 
-  // Sends a 6-digit SMS code. Creates the account on first use.
-  const sendPhoneOtp = async (phone, fullName) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      phone,
-      options: {
-        shouldCreateUser: true,
-        data: fullName ? { full_name: fullName, phone } : { phone }
-      }
-    })
-    if (error) throw error
+  // Sends a 6-digit code over WhatsApp via the send-whatsapp-otp Edge Function.
+  // Creates the account on first use (handled in verifyPhoneOtp below).
+  const sendPhoneOtp = async (phone) => {
+    const { data, error } = await supabase.functions.invoke('send-whatsapp-otp', { body: { phone } })
+    if (error) throw new Error(data?.error || error.message || 'Could not send the code. Please try again.')
+    if (data?.error) throw new Error(data.error)
+    return data // { success, phone }
   }
 
-  const verifyPhoneOtp = async (phone, token) => {
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
-    if (error) throw error
+  // Verifies the code via verify-whatsapp-otp, which creates/finds the auth
+  // user and hands back Supabase's own internal magic-link OTP for that
+  // user's synthetic email — exchanging it here is what actually establishes
+  // a real, persisted session (same mechanism the rest of the app relies on).
+  const verifyPhoneOtp = async (phone, code, fullName) => {
+    const { data, error } = await supabase.functions.invoke('verify-whatsapp-otp', { body: { phone, code, fullName } })
+    if (error) throw new Error(data?.error || error.message || 'Invalid or expired code. Please try again.')
+    if (data?.error) throw new Error(data.error)
 
-    if (data.user) {
-      const profile = { id: data.user.id, phone }
-      if (data.user.user_metadata?.full_name) profile.full_name = data.user.user_metadata.full_name
-      await supabase.from('profiles').upsert(profile)
-    }
-    return data
+    const { data: sessionData, error: sessionError } = await supabase.auth.verifyOtp({
+      email: data.email, token: data.otp, type: 'email'
+    })
+    if (sessionError) throw sessionError
+    return sessionData
   }
 
   const signOut = async () => {

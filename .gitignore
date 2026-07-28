@@ -7,3 +7,4 @@ dist
 .netlify
 bundle.js
 page.html
+supabase/.temp

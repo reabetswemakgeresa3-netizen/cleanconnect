@@ -276,3 +276,31 @@ ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 -- against, so this is how "only admins can read them" is enforced here.
 CREATE POLICY "Anyone can submit a contact message" ON contact_messages
   FOR INSERT WITH CHECK (true);
+
+
+-- ============================================================
+-- V7 ADDITIONS — WhatsApp OTP signup/login (replaces native SMS phone auth)
+-- ============================================================
+
+-- Short-lived verification codes for the send-whatsapp-otp /
+-- verify-whatsapp-otp Edge Functions. Only ever touched with the service
+-- role key (inside those functions), never from the browser.
+CREATE TABLE IF NOT EXISTS otp_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  phone TEXT NOT NULL,
+  code TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  verified BOOLEAN DEFAULT false
+);
+
+CREATE INDEX IF NOT EXISTS idx_otp_codes_phone ON otp_codes(phone);
+
+ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY;
+-- Deliberately no policies at all: RLS enabled + zero grants means anon and
+-- authenticated roles get NO access whatsoever. Only the service_role key
+-- (used inside the Edge Functions) can read/write.
+
+-- Edge Function secrets (set once via the Management API or `supabase secrets
+-- set`, not tracked here): TWILIO_SID, TWILIO_TOKEN, TWILIO_WHATSAPP_FROM
+-- (shared with the existing send-whatsapp function).

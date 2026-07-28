@@ -7,6 +7,7 @@ export function normalizeSAPhone(input) {
   if (digits.startsWith('+27') && digits.length === 12) return digits
   if (digits.startsWith('27') && digits.length === 11) return `+${digits}`
   if (digits.startsWith('0') && digits.length === 10) return `+27${digits.slice(1)}`
+  if (/^\d{9}$/.test(digits)) return `+27${digits}` // bare local number, e.g. 821234567
   return null
 }
 

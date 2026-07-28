@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Logo from '../components/Logo'
 import { Icon } from '../components/Icons'
+import PinSpinner from '../components/PinSpinner'
 import { normalizeSAPhone } from '../lib/phone'
+
+const RESEND_COOLDOWN_SECONDS = 30
 
 export function Login() {
   const [method, setMethod] = useState('email')
@@ -33,7 +36,7 @@ export function Login() {
     <Divider />
     <MethodToggle method={method} onChange={m => { setMethod(m); setError('') }} />
     {method === 'phone' ? (
-      <PhoneOtpForm onSuccess={() => navigate('/dashboard')} />
+      <WhatsAppOtpForm onSuccess={() => navigate('/dashboard')} />
     ) : (
       <form onSubmit={handleSubmit}>
         {error && <ErrorBox message={error} />}
@@ -111,7 +114,7 @@ function MethodToggle({ method, onChange }) {
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginBottom: 24,
       background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 4
     }}>
-      {[{ id: 'email', label: 'Email' }, { id: 'phone', label: 'Phone OTP' }].map(m => (
+      {[{ id: 'email', label: 'Email' }, { id: 'phone', label: 'WhatsApp' }].map(m => (
         <button key={m.id} type="button" onClick={() => onChange(m.id)} style={{
           padding: '10px 8px', borderRadius: 9, border: 'none', cursor: 'pointer',
           background: method === m.id ? '#00C896' : 'transparent',
@@ -123,25 +126,30 @@ function MethodToggle({ method, onChange }) {
   )
 }
 
-export function PhoneOtpForm({ onSuccess, fullName }) {
+export function WhatsAppOtpForm({ onSuccess, fullName }) {
   const [step, setStep] = useState('phone') // 'phone' | 'code'
   const [phone, setPhone] = useState('')
   const [e164, setE164] = useState('')
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [cooldown, setCooldown] = useState(0)
   const { sendPhoneOtp, verifyPhoneOtp } = useAuth()
 
-  const handleSend = async (e) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setInterval(() => setCooldown(c => Math.max(0, c - 1)), 1000)
+    return () => clearInterval(t)
+  }, [cooldown])
+
+  const doSend = async (normalized) => {
     setError('')
-    const normalized = normalizeSAPhone(phone)
-    if (!normalized) return setError('Enter a valid South African number, e.g. 072 123 4567')
     setLoading(true)
     try {
-      await sendPhoneOtp(normalized, fullName)
-      setE164(normalized)
+      const result = await sendPhoneOtp(normalized)
+      setE164(result.phone)
       setStep('code')
+      setCooldown(RESEND_COOLDOWN_SECONDS)
     } catch (err) {
       setError(err.message || 'Could not send the code. Please try again.')
     } finally {
@@ -149,12 +157,24 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
     }
   }
 
+  const handleSend = async (e) => {
+    e.preventDefault()
+    const normalized = normalizeSAPhone(phone)
+    if (!normalized) return setError('Enter a valid South African number, e.g. 072 123 4567')
+    await doSend(normalized)
+  }
+
+  const handleResend = () => {
+    if (cooldown > 0 || loading) return
+    doSend(e164)
+  }
+
   const handleVerify = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await verifyPhoneOtp(e164, code.trim())
+      await verifyPhoneOtp(e164, code.trim(), fullName)
       onSuccess()
     } catch (err) {
       setError(err.message || 'Invalid or expired code. Please try again.')
@@ -167,7 +187,7 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
     <form onSubmit={handleVerify}>
       {error && <ErrorBox message={error} />}
       <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 16 }}>
-        We sent a 6-digit code to <strong style={{ color: 'var(--text)' }}>{e164}</strong>
+        We sent a 6-digit code via WhatsApp to <strong style={{ color: 'var(--text)' }}>{e164}</strong>
       </p>
       <Field label="Verification code">
         <input className="input-field" type="text" inputMode="numeric" autoComplete="one-time-code"
@@ -176,11 +196,18 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
           style={{ letterSpacing: '0.4em', textAlign: 'center', fontSize: 20 }} />
       </Field>
       <button type="submit" className="btn-primary" disabled={loading || code.length < 6}
-        style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16 }}>
-        {loading ? 'Verifying...' : 'Verify & Sign In →'}
+        style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        {loading ? <><PinSpinner size={18} variant="mono" /> Verifying...</> : 'Verify & Sign In →'}
       </button>
-      <button type="button" onClick={() => { setStep('phone'); setCode(''); setError('') }}
-        style={{ width: '100%', marginTop: 12, background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer' }}>
+      <button type="button" onClick={handleResend} disabled={cooldown > 0 || loading} style={{
+        width: '100%', marginTop: 12, background: 'transparent', border: 'none',
+        color: cooldown > 0 ? 'var(--text-dim)' : '#00C896', fontSize: 14, fontWeight: 600,
+        cursor: cooldown > 0 ? 'default' : 'pointer'
+      }}>
+        {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code via WhatsApp'}
+      </button>
+      <button type="button" onClick={() => { setStep('phone'); setCode(''); setError(''); setCooldown(0) }}
+        style={{ width: '100%', marginTop: 4, background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: 14, cursor: 'pointer' }}>
         ← Use a different number
       </button>
     </form>
@@ -189,16 +216,22 @@ export function PhoneOtpForm({ onSuccess, fullName }) {
   return (
     <form onSubmit={handleSend}>
       {error && <ErrorBox message={error} />}
-      <Field label="Phone number">
+      <Field label="WhatsApp number">
         <input className="input-field" type="tel" placeholder="072 123 4567"
           value={phone} onChange={e => setPhone(e.target.value)} required autoFocus />
       </Field>
       <button type="submit" className="btn-primary" disabled={loading}
-        style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16 }}>
-        {loading ? 'Sending code...' : 'Send Code via SMS →'}
+        style={{ width: '100%', justifyContent: 'center', marginTop: 8, padding: 16, fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        {loading
+          ? <><PinSpinner size={18} variant="mono" /> Sending via WhatsApp...</>
+          : <><Icon name="whatsapp" size={18} color="#FFFFFF" /> Send Code via WhatsApp</>}
       </button>
       <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', marginTop: 12 }}>
-        Standard SMS rates may apply. No password needed.
+        We'll send a 6-digit code to your WhatsApp. No password needed.
+      </p>
+      <p style={{ fontSize: 11.5, color: 'var(--text-dim)', textAlign: 'center', marginTop: 8, lineHeight: 1.5 }}>
+        During testing, your number must first join our Twilio WhatsApp sandbox —
+        send the join code we've given you to the sandbox number on WhatsApp before requesting a code.
       </p>
     </form>
   )
@@ -255,7 +288,7 @@ export function Signup() {
           <input className="input-field" placeholder="Thabo Nkosi"
             value={form.fullName} onChange={set('fullName')} />
         </Field>
-        <PhoneOtpForm fullName={form.fullName} onSuccess={() => navigate('/dashboard')} />
+        <WhatsAppOtpForm fullName={form.fullName} onSuccess={() => navigate('/dashboard')} />
       </>
     ) : (
       <form onSubmit={handleSubmit}>
