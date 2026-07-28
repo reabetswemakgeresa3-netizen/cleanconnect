@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Icon, InitialsAvatar } from '../components/Icons'
 
+// Demo profiles are illustrative only — they don't exist in the cleaners
+// table, so "Book" must fall back to a generic booking rather than passing
+// a fake cleaner id through (which would silently never match anyone).
 const DEMO_CLEANERS = [
   {
     id: '1',
+    isDemo: true,
     name: 'Zanele Dlamini',
     location: 'Johannesburg, Gauteng',
     specialties: ['residential', 'office', 'carpet'],
@@ -18,6 +23,7 @@ const DEMO_CLEANERS = [
   },
   {
     id: '2',
+    isDemo: true,
     name: 'Sipho Nkosi',
     location: 'Sandton, Gauteng',
     specialties: ['industrial', 'postConstruction', 'office'],
@@ -31,6 +37,7 @@ const DEMO_CLEANERS = [
   },
   {
     id: '3',
+    isDemo: true,
     name: 'Fatima Mokoena',
     location: 'Cape Town, Western Cape',
     specialties: ['medical', 'residential', 'office'],
@@ -44,6 +51,7 @@ const DEMO_CLEANERS = [
   },
   {
     id: '4',
+    isDemo: true,
     name: 'Thabo Sithole',
     location: 'Pretoria, Gauteng',
     specialties: ['gardening', 'residential', 'event'],
@@ -57,6 +65,7 @@ const DEMO_CLEANERS = [
   },
   {
     id: '5',
+    isDemo: true,
     name: 'Nomsa Khumalo',
     location: 'Durban, KwaZulu-Natal',
     specialties: ['residential', 'carpet', 'event'],
@@ -70,6 +79,7 @@ const DEMO_CLEANERS = [
   },
   {
     id: '6',
+    isDemo: true,
     name: 'Kagiso Molefe',
     location: 'Ekurhuleni, Gauteng',
     specialties: ['industrial', 'postConstruction', 'gardening'],
@@ -342,9 +352,9 @@ function CleanerModal({ cleaner, onClose }) {
           </div>
         </div>
 
-        <a href="/book" className="btn-primary" style={{ width: '100%', justifyContent: 'center', display: 'flex' }}>
+        <Link to={cleaner.isDemo ? '/book' : `/book?cleaner=${cleaner.id}`} className="btn-primary" style={{ width: '100%', justifyContent: 'center', display: 'flex' }}>
           Book {cleaner.name.split(' ')[0]} →
-        </a>
+        </Link>
       </div>
     </div>
   )

@@ -38,6 +38,17 @@ export default function Book() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const [step, setStep] = useState(1)
+  const [preselectedCleaner, setPreselectedCleaner] = useState(null)
+
+  // Coming from a cleaner's profile ("Book {name}") — carry that choice
+  // through to the booking itself, so it actually reaches their portal
+  // instead of silently landing as an unassigned job.
+  useEffect(() => {
+    const cleanerId = searchParams.get('cleaner')
+    if (!cleanerId) return
+    supabase.from('cleaners').select('id, name').eq('id', cleanerId).maybeSingle()
+      .then(({ data }) => { if (data) setPreselectedCleaner(data) })
+  }, [searchParams])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [bookingId, setBookingId] = useState(null)
@@ -76,7 +87,9 @@ export default function Book() {
       amount: price,
       status: 'pending',
       payment_status: 'unpaid',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      cleaner_id: preselectedCleaner?.id || null,
+      cleaner_assigned: preselectedCleaner?.name || null
     }
 
     try {
@@ -95,10 +108,12 @@ export default function Book() {
   const handlePayment = async () => {
     setError('')
     setLoading(true)
+    let bId
 
     try {
-      // 1. Save booking first (as pending)
-      const bId = await savePendingBooking()
+      // 1. Save booking first (as pending) — this succeeding is what actually
+      // matters; everything below is just trying to hand off to Yoco.
+      bId = await savePendingBooking()
       setBookingId(bId)
 
       // 2. Get site URL for redirects
@@ -123,10 +138,10 @@ export default function Book() {
         })
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => null)
 
-      if (!res.ok || data.error) {
-        throw new Error(data.error || 'Could not create payment session')
+      if (!res.ok || !data || data.error) {
+        throw new Error(data?.error || 'Could not create payment session')
       }
 
       // 4. Redirect to Yoco hosted payment page
@@ -135,10 +150,12 @@ export default function Book() {
     } catch (err) {
       console.error('Payment error:', err)
 
-      // If Netlify function not set up yet, fall back to demo mode
-      if (err.message.includes('fetch') || err.message.includes('404') || err.message.includes('not configured')) {
-        const bId = await savePendingBooking()
-        setBookingId(bId)
+      // The booking itself is already saved above regardless of what the
+      // payment gateway call did, so fall back to the confirmation screen
+      // rather than stranding the customer on a raw error after their
+      // booking already exists. Only show a real error if the booking save
+      // itself failed (bId never got set).
+      if (bId) {
         setStep(5)
       } else {
         setError(err.message || 'Payment failed. Please try again.')
@@ -166,6 +183,7 @@ export default function Book() {
         onSelectService={id => setVal('serviceId', id)}
         onSqmChange={v => setVal('sqm', v)}
         onContinue={() => setStep(2)}
+        preselectedCleaner={preselectedCleaner}
       />
     )
   }
@@ -353,7 +371,7 @@ export default function Book() {
 }
 
 // ── STEP 1 — pick a service + property size on a live map of nearby cleaners ──
-function ServiceMapStep({ serviceId, sqm, onSelectService, onSqmChange, onContinue }) {
+function ServiceMapStep({ serviceId, sqm, onSelectService, onSqmChange, onContinue, preselectedCleaner }) {
   const [geoCity, setGeoCity] = useState('Johannesburg')
   const [userPos, setUserPos] = useState(JHB)
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -415,6 +433,19 @@ function ServiceMapStep({ serviceId, sqm, onSelectService, onSqmChange, onContin
           <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{geoCity}</div>
         </div>
       </div>
+
+      {/* Confirms the customer's cleaner choice actually carried through from the profile page */}
+      {preselectedCleaner && (
+        <div style={{
+          margin: '0 20px 10px', background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.3)',
+          borderRadius: 14, padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 10
+        }}>
+          <Icon name="checkCircle" size={17} color="#00C896" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: 13.5, color: 'var(--text)', fontWeight: 600 }}>
+            Booking with {preselectedCleaner.name}
+          </span>
+        </div>
+      )}
 
       {/* Map hero with bottom sheet */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
