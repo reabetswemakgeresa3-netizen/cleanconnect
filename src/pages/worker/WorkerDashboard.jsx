@@ -42,8 +42,14 @@ export default function WorkerDashboard() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const updateStatus = async (jobId, status) => {
-    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status } : j))
-    const { error } = await supabase.from('bookings').update({ status }).eq('id', jobId)
+    const job = jobs.find(j => j.id === jobId)
+    // Cash jobs have no online payment step — completion is when the
+    // cleaner actually collects the money, so mark it paid at that point.
+    const updates = status === 'completed' && job?.payment_method === 'cash'
+      ? { status, payment_status: 'paid' }
+      : { status }
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, ...updates } : j))
+    const { error } = await supabase.from('bookings').update(updates).eq('id', jobId)
     if (error) fetchData() // revert optimistic update if it failed
   }
 
@@ -253,6 +259,11 @@ function JobCard({ job, onStatusChange }) {
             <span className={`badge ${conf.color}`} style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12 }}>
               {conf.label}
             </span>
+            {job.payment_method === 'cash' && (
+              <span style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: 100, fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <Icon name="wallet" size={12} color="var(--text-muted)" /> Cash on Completion
+              </span>
+            )}
           </div>
           <div style={{ display: 'grid', gap: 5, fontSize: 13.5, color: 'var(--text-muted)' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="pin" size={13} color="var(--text-dim)" /> {fullAddress}</span>

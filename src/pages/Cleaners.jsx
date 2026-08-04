@@ -236,7 +236,9 @@ function CleanerCard({ cleaner, onClick }) {
             <span style={{ color: '#C46A00', fontSize: 14 }}>★</span>
             <span style={{ color: 'var(--text)', fontWeight: 700, fontSize: 16 }}>{cleaner.rating}</span>
           </div>
-          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>{cleaner.total_jobs} jobs</div>
+          <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
+            {cleaner.total_jobs} jobs{cleaner.review_count > 0 ? ` · ${cleaner.review_count} review${cleaner.review_count === 1 ? '' : 's'}` : ''}
+          </div>
         </div>
       </div>
 
@@ -311,7 +313,7 @@ function CleanerModal({ cleaner, onClose }) {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: 'Rating', value: `★ ${cleaner.rating}` },
+            { label: cleaner.review_count > 0 ? `${cleaner.review_count} Review${cleaner.review_count === 1 ? '' : 's'}` : 'Rating', value: `★ ${cleaner.rating}` },
             { label: 'Jobs Done', value: cleaner.total_jobs },
             { label: 'Response', value: cleaner.response_time }
           ].map(s => (

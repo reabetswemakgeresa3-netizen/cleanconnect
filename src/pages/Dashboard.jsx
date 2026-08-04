@@ -7,6 +7,8 @@ import LiveTrackingMap from '../components/LiveTrackingMap'
 import { Icon, ServiceBadge } from '../components/Icons'
 import PinSpinner from '../components/PinSpinner'
 import UserAvatar from '../components/UserAvatar'
+import StarPicker from '../components/StarPicker'
+import ReviewModal from '../components/ReviewModal'
 import { getCancellationPolicy } from '../lib/cancellation'
 
 const PAYMENT_LABELS = {
@@ -257,13 +259,39 @@ function BookingModal({ booking, onClose, onCancelled }) {
   const canCancel = booking.status === 'pending' || booking.status === 'confirmed'
   const policy = canCancel ? getCancellationPolicy(booking.booking_date, booking.time_slot) : null
 
+  const [review, setReview] = useState(undefined) // undefined = loading, null = none yet
+  const [showReviewModal, setShowReviewModal] = useState(false)
+
+  useEffect(() => {
+    if (booking.status !== 'completed') { setReview(null); return }
+    let cancelled = false
+    supabase.from('reviews').select('*').eq('booking_id', booking.id).maybeSingle()
+      .then(({ data }) => { if (!cancelled) setReview(data || null) })
+    return () => { cancelled = true }
+  }, [booking.id, booking.status])
+
   const confirmCancel = async () => {
     setCancelling(true)
     setCancelError('')
-    const updates = { status: 'cancelled', payment_status: policy.newPaymentStatus }
+    // A real Yoco refund only applies to a card payment that's actually been
+    // paid and qualifies for a full refund — cash bookings and the
+    // inside-window "pending review" case keep today's local-write behavior.
+    const eligibleForAutoRefund = policy.fullRefund && booking.payment_method !== 'cash' && booking.payment_status === 'paid'
+    const updates = { status: 'cancelled', payment_status: eligibleForAutoRefund ? booking.payment_status : policy.newPaymentStatus }
     try {
-      const { error } = await supabase.from('bookings').update(updates).eq('id', booking.id)
-      if (error) throw error
+      if (eligibleForAutoRefund) {
+        // process-refund only touches payment_status (it doesn't know about
+        // "cancelled" as a booking concept) — status still needs setting here.
+        const { data, error } = await supabase.functions.invoke('process-refund', { body: { bookingId: booking.id } })
+        if (error) throw new Error(data?.error || error.message || 'Could not process the refund.')
+        if (data?.error) throw new Error(data.error)
+        updates.payment_status = 'refunded'
+        const { error: statusError } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id)
+        if (statusError) throw statusError
+      } else {
+        const { error } = await supabase.from('bookings').update(updates).eq('id', booking.id)
+        if (error) throw error
+      }
       // Reuse the same WhatsApp notification path Admin uses for status changes
       supabase.functions.invoke('send-whatsapp', {
         body: {
@@ -275,8 +303,8 @@ function BookingModal({ booking, onClose, onCancelled }) {
       }).catch(() => {})
       onCancelled({ ...booking, ...updates })
       setConfirmingCancel(false)
-    } catch {
-      setCancelError('Could not cancel this booking. Please try again.')
+    } catch (err) {
+      setCancelError(err.message || 'Could not cancel this booking. Please try again.')
     } finally {
       setCancelling(false)
     }
@@ -384,6 +412,23 @@ function BookingModal({ booking, onClose, onCancelled }) {
           </div>
         )}
 
+        {/* Rate your cleaner */}
+        {booking.status === 'completed' && booking.cleaner_id && review !== undefined && (
+          <div style={{ marginBottom: 24 }}>
+            {review ? (
+              <div style={{ background: 'var(--tile-2)', borderRadius: 14, padding: '16px 20px' }}>
+                <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Rating</div>
+                <StarPicker value={review.rating} readOnly size={20} />
+                {review.comment && <p style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.6 }}>"{review.comment}"</p>}
+              </div>
+            ) : (
+              <button onClick={() => setShowReviewModal(true)} className="btn-outline" style={{ width: '100%', justifyContent: 'center', padding: 14 }}>
+                Rate Your Cleaner
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Progress timeline */}
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -409,6 +454,14 @@ function BookingModal({ booking, onClose, onCancelled }) {
           </div>
         </div>
       </div>
+
+      {showReviewModal && (
+        <ReviewModal
+          booking={booking}
+          onClose={() => setShowReviewModal(false)}
+          onSubmitted={newReview => { setReview(newReview); setShowReviewModal(false) }}
+        />
+      )}
     </div>
   )
 }

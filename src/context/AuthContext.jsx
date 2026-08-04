@@ -6,6 +6,8 @@ const AuthContext = createContext({})
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminChecked, setAdminChecked] = useState(false)
 
   useEffect(() => {
     // Get initial session
@@ -21,6 +23,16 @@ export function AuthProvider({ children }) {
 
     return () => subscription.unsubscribe()
   }, [])
+
+  // Resolve admin status once we know who's signed in. RLS on admin_users
+  // only ever lets a user see their OWN row, so this is a safe, minimal check.
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); setAdminChecked(true); return }
+    setAdminChecked(false)
+    supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle()
+      .then(({ data }) => { setIsAdmin(!!data); setAdminChecked(true) })
+      .catch(() => { setIsAdmin(false); setAdminChecked(true) })
+  }, [user])
 
   const signUp = async (email, password, fullName, phone) => {
     const { data, error } = await supabase.auth.signUp({
@@ -90,7 +102,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut, signInWithGoogle, sendPhoneOtp, verifyPhoneOtp }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin, adminChecked, signUp, signIn, signOut, signInWithGoogle, sendPhoneOtp, verifyPhoneOtp }}>
       {children}
     </AuthContext.Provider>
   )

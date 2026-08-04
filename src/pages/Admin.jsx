@@ -1,32 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import Logo from '../components/Logo'
 import { Icon, ServiceBadge, ServiceIcon } from '../components/Icons'
 import PinSpinner from '../components/PinSpinner'
 import { SERVICES, STATUS_CONFIG, formatCurrency } from '../data/services'
 
-const ADMIN_PIN = import.meta.env.VITE_ADMIN_PIN || 'cleanconnect2025'
-
 const CLEANERS = ['Zanele Dlamini', 'Sipho Nkosi', 'Fatima Mokoena', 'Thabo Sithole', 'Nomsa Khumalo', 'Kagiso Molefe']
 
-const DEMO_BOOKINGS = [
-  { id: 'CC-A1B2C3D4', user_id: 'u1', service_name: 'Residential Cleaning', service_id: 'residential', sqm: 85, address: '42 Sandton Drive', city: 'Johannesburg', province: 'Gauteng', booking_date: '2025-02-20', time_slot: '09:00 – 11:00', contact_name: 'Thabo Nkosi', contact_phone: '072 111 2233', amount: 1377, status: 'pending', payment_status: 'paid', created_at: '2025-02-18T10:00:00Z', cleaner_assigned: null, special_instructions: 'Please bring eco-friendly products.' },
-  { id: 'CC-E5F6G7H8', user_id: 'u2', service_name: 'Office & Commercial', service_id: 'office', sqm: 220, address: '1 Rosebank Mall Rd', city: 'Johannesburg', province: 'Gauteng', booking_date: '2025-02-21', time_slot: '07:00 – 09:00', contact_name: 'Nomsa Dube', contact_phone: '083 444 5566', amount: 2970, status: 'confirmed', payment_status: 'paid', created_at: '2025-02-17T08:00:00Z', cleaner_assigned: 'Zanele Dlamini', special_instructions: '' },
-  { id: 'CC-I9J0K1L2', user_id: 'u3', service_name: 'Garden & Outdoor', service_id: 'gardening', sqm: 300, address: '15 Estate Drive', city: 'Pretoria', province: 'Gauteng', booking_date: '2025-02-22', time_slot: '11:00 – 13:00', contact_name: 'Sipho Khumalo', contact_phone: '060 777 8899', amount: 2040, status: 'in-progress', payment_status: 'paid', created_at: '2025-02-16T14:00:00Z', cleaner_assigned: 'Thabo Sithole', special_instructions: 'Gate code: 1234' },
-  { id: 'CC-M3N4O5P6', user_id: 'u4', service_name: 'Industrial Cleaning', service_id: 'industrial', sqm: 500, address: '8 Industrial Park', city: 'Ekurhuleni', province: 'Gauteng', booking_date: '2025-02-19', time_slot: '07:00 – 09:00', contact_name: 'Kagiso Molefe', contact_phone: '071 333 4455', amount: 5100, status: 'completed', payment_status: 'paid', created_at: '2025-02-14T09:00:00Z', cleaner_assigned: 'Sipho Nkosi', special_instructions: '' },
-  { id: 'CC-Q7R8S9T0', user_id: 'u5', service_name: 'Medical & Healthcare', service_id: 'medical', sqm: 60, address: '5 Clinic Road', city: 'Cape Town', province: 'Western Cape', booking_date: '2025-02-23', time_slot: '13:00 – 15:00', contact_name: 'Dr. Fatima Adams', contact_phone: '082 999 0011', amount: 1512, status: 'pending', payment_status: 'paid', created_at: '2025-02-18T11:00:00Z', cleaner_assigned: null, special_instructions: 'Sterile environment required.' },
-  { id: 'CC-R1S2T3U4', user_id: 'u6', service_name: 'Carpet & Upholstery', service_id: 'carpet', sqm: 45, address: '27 Bryanston Close', city: 'Johannesburg', province: 'Gauteng', booking_date: '2025-02-24', time_slot: '15:00 – 17:00', contact_name: 'Lerato Sithole', contact_phone: '079 222 3344', amount: 891, status: 'confirmed', payment_status: 'paid', created_at: '2025-02-19T07:30:00Z', cleaner_assigned: 'Nomsa Khumalo', special_instructions: '' },
-  { id: 'CC-V5W6X7Y8', user_id: 'u7', service_name: 'Post-Construction', service_id: 'postConstruction', sqm: 180, address: '3 New Development Rd', city: 'Durban', province: 'KwaZulu-Natal', booking_date: '2025-02-25', time_slot: '09:00 – 11:00', contact_name: 'Mandla Zulu', contact_phone: '083 555 6677', amount: 3240, status: 'pending', payment_status: 'paid', created_at: '2025-02-20T13:00:00Z', cleaner_assigned: null, special_instructions: 'Heavy dust from renovation.' },
-  { id: 'CC-Z9A0B1C2', user_id: 'u8', service_name: 'Residential Cleaning', service_id: 'residential', sqm: 120, address: '8 Fourways Gardens', city: 'Johannesburg', province: 'Gauteng', booking_date: '2025-02-26', time_slot: '11:00 – 13:00', contact_name: 'Amahle Dlamini', contact_phone: '071 888 9900', amount: 1944, status: 'cancelled', payment_status: 'refunded', created_at: '2025-02-20T16:00:00Z', cleaner_assigned: null, special_instructions: '' },
-]
-
 export default function Admin() {
-  const [authenticated, setAuthenticated] = useState(false)
-  const [pin, setPin] = useState('')
-  const [pinError, setPinError] = useState('')
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [activeTab, setActiveTab] = useState('customers')
   const [statusFilter, setStatusFilter] = useState('all')
   const [serviceFilter, setServiceFilter] = useState('all')
@@ -34,24 +17,25 @@ export default function Admin() {
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [sortBy, setSortBy] = useState('newest')
   const [cleanersList, setCleanersList] = useState([])
+  const [actionError, setActionError] = useState('')
 
-  const handlePinSubmit = (e) => {
-    e.preventDefault()
-    if (pin === ADMIN_PIN) { setAuthenticated(true); fetchBookings() }
-    else setPinError('Incorrect PIN. Try again.')
-  }
+  useEffect(() => { fetchBookings() }, [])
 
   const fetchBookings = async () => {
     setLoading(true)
+    setFetchError('')
     try {
       const { data, error } = await supabase
         .from('bookings').select('*').order('created_at', { ascending: false })
-      if (error || !data || data.length === 0) setBookings(DEMO_BOOKINGS)
-      else setBookings(data)
+      if (error) throw error
+      setBookings(data || [])
       const { data: cleanerRows } = await supabase.from('cleaners').select('id, name, available')
       if (cleanerRows?.length) setCleanersList(cleanerRows)
-    } catch { setBookings(DEMO_BOOKINGS) }
-    finally { setLoading(false) }
+    } catch (err) {
+      setFetchError(err.message || 'Could not load bookings. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Registered workers from the DB; falls back to the demo name list
@@ -62,18 +46,44 @@ export default function Admin() {
     updateBooking(bookingId, { cleaner_assigned: name || null, cleaner_id: c?.id ?? null })
   }
 
+  const [refundingId, setRefundingId] = useState(null)
+
+  const processRefund = async (bookingId) => {
+    setRefundingId(bookingId)
+    setActionError('')
+    try {
+      const { data, error } = await supabase.functions.invoke('process-refund', { body: { bookingId } })
+      if (error) throw new Error(data?.error || error.message || 'Could not process the refund.')
+      if (data?.error) throw new Error(data.error)
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, payment_status: 'refunded' } : b))
+      if (selectedBooking?.id === bookingId) setSelectedBooking(prev => ({ ...prev, payment_status: 'refunded' }))
+    } catch (err) {
+      setActionError(err.message || 'Could not process the refund.')
+    } finally {
+      setRefundingId(null)
+    }
+  }
+
   const updateBooking = async (id, updates) => {
+    const previous = bookings.find(b => b.id === id)
     setBookings(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b))
     if (selectedBooking?.id === id) setSelectedBooking(prev => ({ ...prev, ...updates }))
+    setActionError('')
     try {
-      await supabase.from('bookings').update(updates).eq('id', id)
+      const { error } = await supabase.from('bookings').update(updates).eq('id', id)
+      if (error) throw error
       if (updates.status) {
-        const booking = bookings.find(b => b.id === id)
         await supabase.functions.invoke('send-whatsapp', {
-          body: { type: 'status_update', booking: { ...booking, ...updates }, customerPhone: booking?.contact_phone, customerName: booking?.contact_name }
+          body: { type: 'status_update', booking: { ...previous, ...updates }, customerPhone: previous?.contact_phone, customerName: previous?.contact_name }
         }).catch(() => {})
       }
-    } catch { }
+    } catch (err) {
+      if (previous) {
+        setBookings(prev => prev.map(b => b.id === id ? previous : b))
+        if (selectedBooking?.id === id) setSelectedBooking(previous)
+      }
+      setActionError(err.message || 'That update failed. Please try again.')
+    }
   }
 
   // Derived data
@@ -120,24 +130,14 @@ export default function Admin() {
     return acc
   }, {})).sort((a, b) => b.totalSpent - a.totalSpent)
 
-  if (!authenticated) {
+  if (fetchError) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 40px', background: 'var(--bg)' }}>
-        <div style={{ width: '100%', maxWidth: 400 }}>
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><Logo variant="tile" size={64} /></div>
-            <h1 style={{ fontSize: 28, marginBottom: 8 }}>Admin Dashboard</h1>
-            <p style={{ color: 'var(--text-muted)' }}>CleanConnect Operations Centre</p>
-          </div>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--tile-2)', borderRadius: 20, padding: 36, boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 8px 30px rgba(0,0,0,0.05)' }}>
-            <form onSubmit={handlePinSubmit}>
-              {pinError && <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#E11900', fontSize: 14 }}>{pinError}</div>}
-              <label style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Admin PIN</label>
-              <input className="input-field" type="password" placeholder="Enter PIN" value={pin} onChange={e => setPin(e.target.value)} style={{ marginBottom: 16 }} autoFocus />
-              <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center', padding: 14 }}>Access Dashboard →</button>
-            </form>
-            <p style={{ fontSize: 12, color: 'var(--text-dim)', textAlign: 'center', marginTop: 16 }}>Default PIN: <code style={{ color: '#00C896' }}>cleanconnect2025</code></p>
-          </div>
+        <div style={{ width: '100%', maxWidth: 420, textAlign: 'center' }}>
+          <div style={{ marginBottom: 16 }}><Icon name="info" size={44} color="#E11900" /></div>
+          <h1 style={{ fontSize: 22, marginBottom: 8 }}>Couldn't load bookings</h1>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{fetchError}</p>
+          <button onClick={fetchBookings} className="btn-primary" style={{ padding: '12px 24px' }}>Try Again</button>
         </div>
       </div>
     )
@@ -157,6 +157,13 @@ export default function Admin() {
             Refresh Data
           </button>
         </div>
+
+        {actionError && (
+          <div style={{ background: 'rgba(225,25,0,0.1)', border: '1px solid rgba(225,25,0,0.25)', borderRadius: 10, padding: '10px 14px', marginBottom: 24, color: '#E11900', fontSize: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            {actionError}
+            <button onClick={() => setActionError('')} style={{ background: 'none', border: 'none', color: '#E11900', cursor: 'pointer', fontSize: 16 }}>✕</button>
+          </div>
+        )}
 
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 14, marginBottom: 32 }}>
@@ -311,6 +318,8 @@ export default function Admin() {
           onStatusChange={status => updateBooking(selectedBooking.id, { status })}
           onAssignCleaner={name => assignCleaner(selectedBooking.id, name)}
           cleaners={cleanerOptions}
+          onRefund={() => processRefund(selectedBooking.id)}
+          refunding={refundingId === selectedBooking.id}
         />
       )}
     </div>
@@ -466,7 +475,8 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
         <div style={{ textAlign: 'right' }}>
           <div style={{ color: '#00C896', fontWeight: 800, fontFamily: 'Inter', fontSize: 17 }}>{formatCurrency(booking.amount)}</div>
           <div style={{ fontSize: 11, color: booking.payment_status === 'paid' ? '#00C896' : '#C46A00' }}>
-            {booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? 'Refunded' : 'Unpaid'}
+            {booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? 'Refunded' : booking.payment_status === 'pending-review' ? 'Refund pending review' : 'Unpaid'}
+            {' · '}{booking.payment_method === 'cash' ? 'Cash' : 'Yoco'}
           </div>
         </div>
         <button onClick={onSelect} style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', color: 'var(--text-muted)', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>
@@ -478,8 +488,10 @@ function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner, cleane
 }
 
 // ── BOOKING DETAIL MODAL ──────────────────────────────────
-function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, cleaners }) {
+function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, cleaners, onRefund, refunding }) {
   const conf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
+  const canRefund = booking.payment_method !== 'cash'
+    && ['paid', 'pending-review'].includes(booking.payment_status)
 
   const progressSteps = [
     { label: 'Booking Received', done: true },
@@ -536,7 +548,8 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
             { label: 'Service Date', value: new Date(booking.booking_date + 'T00:00:00').toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
             { label: 'Time Window', value: booking.time_slot },
             { label: 'Amount', value: formatCurrency(booking.amount) },
-            { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? 'Refunded' : 'Unpaid' },
+            { label: 'Payment', value: booking.payment_status === 'paid' ? '✓ Paid' : booking.payment_status === 'refunded' ? 'Refunded' : booking.payment_status === 'pending-review' ? 'Refund pending review' : 'Unpaid' },
+            { label: 'Payment Method', value: booking.payment_method === 'cash' ? 'Cash on Completion' : 'Yoco' },
             ...(booking.special_instructions ? [{ label: 'Notes', value: booking.special_instructions }] : []),
             { label: 'Booked On', value: new Date(booking.created_at).toLocaleString('en-ZA') },
           ].map((row, i) => (
@@ -576,6 +589,20 @@ function BookingModal({ booking, onClose, onStatusChange, onAssignCleaner, clean
             })}
           </div>
         </div>
+
+        {/* Process refund */}
+        {canRefund && (
+          <div style={{ marginBottom: 24 }}>
+            <button onClick={onRefund} disabled={refunding} style={{
+              width: '100%', padding: 14, borderRadius: 12, background: 'rgba(225,25,0,0.08)',
+              border: '1px solid rgba(225,25,0,0.25)', color: '#E11900', fontWeight: 700, fontSize: 14.5,
+              cursor: refunding ? 'default' : 'pointer', opacity: refunding ? 0.7 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+            }}>
+              {refunding ? <PinSpinner size={18} variant="mono" /> : 'Process Refund via Yoco'}
+            </button>
+          </div>
+        )}
 
         {/* Progress timeline */}
         <div style={{ background: 'var(--tile-2)', borderRadius: 12, padding: '16px 20px' }}>

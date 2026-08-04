@@ -52,6 +52,7 @@ export default function Book() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [bookingId, setBookingId] = useState(null)
+  const [paymentMethod, setPaymentMethod] = useState('yoco')
 
   const [form, setForm] = useState({
     serviceId: searchParams.get('service') || 'residential',
@@ -87,6 +88,7 @@ export default function Book() {
       amount: price,
       status: 'pending',
       payment_status: 'unpaid',
+      payment_method: paymentMethod,
       created_at: new Date().toISOString(),
       cleaner_id: preselectedCleaner?.id || null,
       cleaner_assigned: preselectedCleaner?.name || null
@@ -116,6 +118,13 @@ export default function Book() {
       bId = await savePendingBooking()
       setBookingId(bId)
 
+      // Cash bookings skip Yoco entirely — the cleaner collects payment on
+      // completion (WorkerDashboard marks payment_status paid at that point).
+      if (paymentMethod === 'cash') {
+        setStep(5)
+        return
+      }
+
       // 2. Get site URL for redirects
       const siteUrl = window.location.origin
 
@@ -142,6 +151,12 @@ export default function Book() {
 
       if (!res.ok || !data || data.error) {
         throw new Error(data?.error || 'Could not create payment session')
+      }
+
+      // Save the checkout id now — it's what a later refund looks up the
+      // payment by, and it's only ever available at this point in the flow.
+      if (data.checkoutId) {
+        await supabase.from('bookings').update({ payment_reference: data.checkoutId }).eq('id', bId)
       }
 
       // 4. Redirect to Yoco hosted payment page
@@ -291,26 +306,66 @@ export default function Book() {
               </div>
             )}
 
-            {/* Pay button */}
-            <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                <Icon name="lock" size={26} color="#00C896" />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 16 }}>Secure Payment via Yoco</div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>You'll be redirected to Yoco's secure payment page</div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-                {['Visa / Mastercard', 'Instant EFT', 'SnapScan'].map(m => (
-                  <span key={m} style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: 'var(--text-muted)' }}>{m}</span>
-                ))}
-              </div>
-
-              <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
-                Powered by Yoco · PCI DSS Compliant · 256-bit SSL
-              </p>
+            {/* Payment method selector */}
+            <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: 'var(--text-muted)', marginBottom: 12 }}>Payment Method</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+              <button onClick={() => setPaymentMethod('yoco')} style={{
+                padding: '16px 14px', borderRadius: 14, textAlign: 'left',
+                border: `2px solid ${paymentMethod === 'yoco' ? '#00C896' : 'var(--border)'}`,
+                background: paymentMethod === 'yoco' ? 'rgba(0,200,150,0.1)' : 'var(--tile)',
+                cursor: 'pointer', transition: 'all 0.2s'
+              }}>
+                <Icon name="lock" size={22} color={paymentMethod === 'yoco' ? '#00C896' : 'var(--text-muted)'} />
+                <div style={{ fontWeight: 600, color: paymentMethod === 'yoco' ? '#00C896' : 'var(--text)', fontSize: 14, marginTop: 8 }}>Pay Online</div>
+                <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>Card, EFT or SnapScan via Yoco</div>
+              </button>
+              <button onClick={() => setPaymentMethod('cash')} style={{
+                padding: '16px 14px', borderRadius: 14, textAlign: 'left',
+                border: `2px solid ${paymentMethod === 'cash' ? '#00C896' : 'var(--border)'}`,
+                background: paymentMethod === 'cash' ? 'rgba(0,200,150,0.1)' : 'var(--tile)',
+                cursor: 'pointer', transition: 'all 0.2s'
+              }}>
+                <Icon name="wallet" size={22} color={paymentMethod === 'cash' ? '#00C896' : 'var(--text-muted)'} />
+                <div style={{ fontWeight: 600, color: paymentMethod === 'cash' ? '#00C896' : 'var(--text)', fontSize: 14, marginTop: 8 }}>Cash on Completion</div>
+                <div style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>Pay your cleaner directly when the job is done</div>
+              </button>
             </div>
+
+            {/* Payment details */}
+            {paymentMethod === 'yoco' ? (
+              <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                  <Icon name="lock" size={26} color="#00C896" />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 16 }}>Secure Payment via Yoco</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>You'll be redirected to Yoco's secure payment page</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+                  {['Visa / Mastercard', 'Instant EFT', 'SnapScan'].map(m => (
+                    <span key={m} style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 13, color: 'var(--text-muted)' }}>{m}</span>
+                  ))}
+                </div>
+
+                <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
+                  Powered by Yoco · PCI DSS Compliant · 256-bit SSL
+                </p>
+              </div>
+            ) : (
+              <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                  <Icon name="wallet" size={26} color="#00C896" />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: 16 }}>Cash on Completion</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Have the exact amount ready for your cleaner</div>
+                  </div>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 4 }}>
+                  Your booking is confirmed immediately — no online payment is needed now.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -320,7 +375,9 @@ export default function Book() {
             <div style={{ width: 80, height: 80, borderRadius: '50%', margin: '0 auto 24px', background: 'linear-gradient(135deg,#00C896,#00A87E)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36 }}>✓</div>
             <h2 style={{ fontSize: 32, marginBottom: 12 }}>Booking Received!</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: 16, marginBottom: 24 }}>
-              Your booking has been saved. Complete payment to confirm.
+              {paymentMethod === 'cash'
+                ? 'Your booking is confirmed. Have the exact cash amount ready for your cleaner on the day.'
+                : 'Your booking has been saved. Complete payment to confirm.'}
             </p>
             <div style={{ display: 'inline-block', background: 'rgba(0,200,150,0.1)', border: '1px solid rgba(0,200,150,0.25)', borderRadius: 12, padding: '10px 24px', marginBottom: 32 }}>
               <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>Booking ID: </span>
@@ -359,7 +416,9 @@ export default function Book() {
               ) : (
                 <button onClick={handlePayment} disabled={loading} className="btn-primary"
                   style={{ padding: '15px 26px', fontSize: 16 }}>
-                  {loading ? <><PinSpinner size={20} variant="mono" /> Processing…</> : 'Pay with Yoco'}
+                  {loading
+                    ? <><PinSpinner size={20} variant="mono" /> Processing…</>
+                    : paymentMethod === 'cash' ? 'Confirm Cash Booking' : 'Pay with Yoco'}
                 </button>
               )}
             </div>

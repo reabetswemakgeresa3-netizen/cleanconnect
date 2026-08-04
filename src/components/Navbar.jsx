@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useNotifications } from '../context/NotificationContext'
 import Logo from './Logo'
 import { Icon } from './Icons'
 import UserAvatar from './UserAvatar'
+import NotificationPanel from './NotificationPanel'
 
 // Legal reading-mode pages render their own minimal back-button header
 // instead of the app chrome — no hamburger/bell, no bottom tab bar.
@@ -12,9 +14,11 @@ const CHROME_HIDDEN_ROUTES = ['/terms', '/privacy']
 // One header for every page: hamburger menu · centered logo · notification bell.
 export default function Navbar() {
   const { user, signOut } = useAuth()
+  const { unreadCount } = useNotifications()
   const navigate = useNavigate()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   if (CHROME_HIDDEN_ROUTES.includes(location.pathname)) return null
 
@@ -62,11 +66,19 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <Link to={user ? '/dashboard' : '/login'} aria-label="Notifications" style={{ ...iconBtn, position: 'relative' }}>
+        <button
+          onClick={() => user ? setNotifOpen(v => !v) : navigate('/login')}
+          aria-label="Notifications"
+          style={{ ...iconBtn, position: 'relative' }}
+        >
           <Icon name="bell" size={20} color="var(--text)" />
-          <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#00C896', border: '1.5px solid var(--surface)' }} />
-        </Link>
+          {unreadCount > 0 && (
+            <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#00C896', border: '1.5px solid var(--surface)' }} />
+          )}
+        </button>
       </nav>
+
+      {notifOpen && <NotificationPanel onClose={() => setNotifOpen(false)} />}
 
       {/* Slide-in menu drawer */}
       {menuOpen && (

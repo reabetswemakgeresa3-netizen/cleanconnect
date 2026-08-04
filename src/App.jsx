@@ -3,9 +3,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { NotificationProvider } from './context/NotificationContext'
 import Navbar from './components/Navbar'
 import BottomNav from './components/BottomNav'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import InstallPrompt from './components/InstallPrompt'
 import SplashScreen from './components/SplashScreen'
 import Account from './pages/Account'
@@ -57,7 +59,7 @@ function AppShell() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
       </Routes>
       <BottomNav />
       <InstallPrompt />
@@ -70,7 +72,9 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <AppShell />
+          <NotificationProvider>
+            <AppShell />
+          </NotificationProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

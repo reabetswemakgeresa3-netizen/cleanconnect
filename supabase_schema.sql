@@ -304,3 +304,231 @@ ALTER TABLE otp_codes ENABLE ROW LEVEL SECURITY;
 -- Edge Function secrets (set once via the Management API or `supabase secrets
 -- set`, not tracked here): TWILIO_SID, TWILIO_TOKEN, TWILIO_WHATSAPP_FROM
 -- (shared with the existing send-whatsapp function).
+
+
+-- ============================================================
+-- V8 ADDITIONS — Real admin accounts (replaces the client-side PIN gate)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS admin_users (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+
+-- An admin can only ever see their OWN row. This is what makes the
+-- `EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid())` subquery below
+-- work under RLS — the caller is always checking their own membership, so
+-- their own row is visible to them. No INSERT/UPDATE policy: admins are only
+-- ever added via direct SQL with the service role, never self-service.
+CREATE POLICY "Admins can view own admin row"
+  ON admin_users FOR SELECT USING (auth.uid() = id);
+
+-- Admin-wide access, layered on top of the existing owner/cleaner policies
+-- (RLS policies OR together — nothing above is removed or narrowed).
+CREATE POLICY "Admins can view all bookings"
+  ON bookings FOR SELECT
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+CREATE POLICY "Admins can update all bookings"
+  ON bookings FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+CREATE POLICY "Admins can view all profiles"
+  ON profiles FOR SELECT
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+-- Supersedes the V6 comment above: contact_messages had no admin-role system
+-- to check against at the time, so reads were dashboard/service-role only.
+-- Now there is one.
+CREATE POLICY "Admins can view contact messages"
+  ON contact_messages FOR SELECT
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+-- Bootstrap the first admin account.
+INSERT INTO admin_users (id, full_name)
+VALUES ('3c22adb3-71a3-4e26-ba5d-06f0e14d1035', 'Reabetswe Ramusi')
+ON CONFLICT (id) DO NOTHING;
+
+
+-- ============================================================
+-- V9 ADDITIONS — Cash payment option
+-- ============================================================
+
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'yoco' CHECK (payment_method IN ('yoco','cash'));
+
+
+-- ============================================================
+-- V10 ADDITIONS — Automated Yoco refunds
+-- ============================================================
+
+-- Audit trail for every refund attempt (success or failure). Written only
+-- by the process-refund Edge Function via the service role.
+CREATE TABLE IF NOT EXISTS refund_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id TEXT NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  yoco_checkout_id TEXT,
+  yoco_refund_id TEXT,
+  amount NUMERIC,
+  status TEXT NOT NULL CHECK (status IN ('succeeded','failed')),
+  error_message TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_refund_log_booking_id ON refund_log(booking_id);
+
+ALTER TABLE refund_log ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view refund log"
+  ON refund_log FOR SELECT
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+-- Edge Function secret (set once via `supabase secrets set` or the
+-- dashboard, not tracked here): YOCO_SECRET_KEY. Separate from the
+-- YOCO_SECRET_KEY Netlify env var used by create-checkout.js — Edge
+-- Functions and Netlify Functions each have their own secret store.
+
+
+-- ============================================================
+-- V11 ADDITIONS — Ratings/reviews submission flow
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_id TEXT NOT NULL UNIQUE REFERENCES bookings(id) ON DELETE CASCADE,
+  cleaner_id UUID NOT NULL REFERENCES cleaners(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_cleaner_id ON reviews(cleaner_id);
+
+ALTER TABLE cleaners ADD COLUMN IF NOT EXISTS review_count INTEGER DEFAULT 0;
+
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view reviews"
+  ON reviews FOR SELECT USING (true);
+
+-- A customer can only review their OWN, COMPLETED booking, and only once
+-- (the booking_id UNIQUE constraint above enforces the "once" part). No
+-- UPDATE/DELETE policy: reviews are immutable once submitted.
+CREATE POLICY "Customers can review their own completed bookings"
+  ON reviews FOR INSERT
+  WITH CHECK (
+    auth.uid() = user_id
+    AND EXISTS (
+      SELECT 1 FROM bookings
+      WHERE bookings.id = reviews.booking_id
+        AND bookings.user_id = auth.uid()
+        AND bookings.status = 'completed'
+    )
+  );
+
+-- SECURITY DEFINER because the submitting customer has no write grant on
+-- cleaners at all — unlike Phase 1's admin check, the acting principal here
+-- is NOT the row owner, so an "own row visible" policy can't apply.
+CREATE OR REPLACE FUNCTION recompute_cleaner_rating()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  UPDATE cleaners SET
+    rating = (SELECT ROUND(AVG(rating)::numeric, 2) FROM reviews WHERE cleaner_id = NEW.cleaner_id),
+    review_count = (SELECT COUNT(*) FROM reviews WHERE cleaner_id = NEW.cleaner_id)
+  WHERE id = NEW.cleaner_id;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_recompute_cleaner_rating ON reviews;
+CREATE TRIGGER trg_recompute_cleaner_rating
+  AFTER INSERT ON reviews
+  FOR EACH ROW EXECUTE FUNCTION recompute_cleaner_rating();
+
+
+-- ============================================================
+-- V12 ADDITIONS — Real notification bell
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT,
+  booking_id TEXT REFERENCES bookings(id) ON DELETE CASCADE,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id, created_at DESC);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- A user can only ever see/update their own notifications. Deliberately no
+-- INSERT policy — only the create_booking_notification trigger below (which
+-- runs SECURITY DEFINER, owned by the migration role) ever writes here.
+CREATE POLICY "Users can view own notifications"
+  ON notifications FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can mark own notifications read"
+  ON notifications FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- Stream new notifications to the bell in real time (same pattern as V4's
+-- live cleaner-location tracking).
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Fires on every bookings UPDATE and creates the right notification(s) for
+-- a status change, a refund, or a job completion — covering every existing
+-- status-update call site (Admin, Dashboard cancellation, worker job
+-- updates, process-refund) automatically, with no changes needed to any of
+-- them. SECURITY DEFINER: the acting principal (admin, cleaner, or the
+-- process-refund function) is never the booking's own customer, so this
+-- can't be an "own row visible" policy the way Phase 1's admin check was.
+CREATE OR REPLACE FUNCTION create_booking_notification()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NEW.user_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF OLD.status IS DISTINCT FROM NEW.status THEN
+    IF NEW.status = 'completed' THEN
+      INSERT INTO notifications (user_id, type, title, body, booking_id)
+      VALUES (NEW.user_id, 'completed', 'Your clean is complete!',
+        'How did ' || COALESCE(NEW.cleaner_assigned, 'your cleaner') || ' do? Tap to leave a rating.', NEW.id);
+    ELSE
+      INSERT INTO notifications (user_id, type, title, body, booking_id)
+      VALUES (NEW.user_id, 'status_update', 'Booking ' || NEW.status,
+        'Your ' || NEW.service_name || ' booking is now ' || NEW.status || '.', NEW.id);
+    END IF;
+  END IF;
+
+  IF OLD.payment_status IS DISTINCT FROM NEW.payment_status AND NEW.payment_status = 'refunded' THEN
+    INSERT INTO notifications (user_id, type, title, body, booking_id)
+    VALUES (NEW.user_id, 'refund', 'Refund processed',
+      'Your refund for ' || NEW.service_name || ' has been processed.', NEW.id);
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_booking_notification ON bookings;
+CREATE TRIGGER trg_booking_notification
+  AFTER UPDATE ON bookings
+  FOR EACH ROW EXECUTE FUNCTION create_booking_notification();
