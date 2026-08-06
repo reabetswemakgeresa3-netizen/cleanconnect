@@ -15,6 +15,9 @@ export default function BookingSuccess() {
         .update({ status: 'confirmed', payment_status: 'paid' })
         .eq('id', bookingId)
         .then(() => {
+          // Broadcast to workers now that payment has actually gone through
+          // (a no-op server-side if a specific cleaner was already picked)
+          supabase.functions.invoke('notify-workers', { body: { bookingId } }).catch(() => {})
           // Fetch booking details to display
           return supabase.from('bookings').select('*').eq('id', bookingId).single()
         })

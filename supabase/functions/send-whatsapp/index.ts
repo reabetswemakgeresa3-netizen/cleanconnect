@@ -73,6 +73,13 @@ serve(async (req) => {
           messages.push({ to: customerWA, sid: result.sid })
         }
       }
+    } else if (type === 'job_accepted') {
+      // A worker claimed a broadcasted job — let the customer know who and when.
+      if (customerWA) {
+        const msg = `🎉 *Good news!*\n\nHi ${customerName}, ${booking.cleaner_assigned || 'a cleaner'} has accepted your booking and will arrive at ${booking.time_slot} on ${booking.booking_date}.\n\n📋 *Ref:* ${booking.id}\n📍 *Address:* ${booking.address}, ${booking.city}\n\nWe'll be there on time! 🇿🇦`
+        const result = await sendMessage(customerWA, msg)
+        messages.push({ to: customerWA, sid: result.sid })
+      }
     } else {
       // New booking — message to customer
       if (customerWA) {

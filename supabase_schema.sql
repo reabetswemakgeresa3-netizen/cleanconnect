@@ -532,3 +532,97 @@ DROP TRIGGER IF EXISTS trg_booking_notification ON bookings;
 CREATE TRIGGER trg_booking_notification
   AFTER UPDATE ON bookings
   FOR EACH ROW EXECUTE FUNCTION create_booking_notification();
+
+
+-- ============================================================
+-- V13 ADDITIONS — Broadcast a new booking to every worker (Uber-style)
+-- ============================================================
+
+-- job_status runs parallel to the existing "status" lifecycle column and is
+-- specific to the broadcast/first-come-first-served acceptance mechanic.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS job_status TEXT NOT NULL DEFAULT 'broadcasting'
+  CHECK (job_status IN ('broadcasting','accepted','in-progress','completed','cancelled'));
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS accepted_by UUID REFERENCES cleaners(id);
+
+-- Bookings created with a specific pre-selected cleaner (the "Book {name}"
+-- flow from a cleaner's profile) are already spoken for — never broadcast.
+UPDATE bookings SET job_status = 'accepted', accepted_by = cleaner_id
+  WHERE cleaner_id IS NOT NULL AND job_status = 'broadcasting';
+UPDATE bookings SET job_status = 'completed' WHERE status = 'completed' AND job_status = 'broadcasting';
+UPDATE bookings SET job_status = 'cancelled' WHERE status = 'cancelled' AND job_status = 'broadcasting';
+-- Historical rows that never actually reached a real confirmed state
+-- (abandoned/incomplete Yoco checkouts, sitting unpaid from before this
+-- feature existed) must never surface as open jobs — only genuinely placed
+-- bookings (cash, or Yoco once paid) belong in the broadcast pool.
+UPDATE bookings SET job_status = 'cancelled'
+  WHERE job_status = 'broadcasting' AND cleaner_id IS NULL
+    AND payment_method != 'cash' AND payment_status != 'paid';
+
+CREATE INDEX IF NOT EXISTS idx_bookings_job_status ON bookings(job_status);
+
+-- Any registered cleaner can see jobs that are still up for grabs.
+CREATE POLICY "Cleaners can view broadcasting jobs"
+  ON bookings FOR SELECT
+  USING (job_status = 'broadcasting' AND EXISTS (SELECT 1 FROM cleaners WHERE user_id = auth.uid()));
+
+-- The race-safe accept: matches only currently-broadcasting rows (Postgres
+-- re-evaluates this against the committed row for each concurrent UPDATE,
+-- so only the first to commit actually changes anything), and WITH CHECK
+-- ensures a cleaner can only ever claim a job for THEMSELVES.
+CREATE POLICY "Cleaners can accept broadcasting jobs"
+  ON bookings FOR UPDATE
+  USING (job_status = 'broadcasting')
+  WITH CHECK (accepted_by IN (SELECT id FROM cleaners WHERE user_id = auth.uid()));
+
+-- Stream booking changes so every worker's "Available Jobs" list updates
+-- live — same pattern as V4 (cleaner location) / V12 (notifications). Note:
+-- once a row leaves job_status='broadcasting', it stops matching the SELECT
+-- policy above for every OTHER cleaner, so Realtime won't deliver that
+-- UPDATE to them (payloads are filtered per-subscriber against RLS). The
+-- Worker Portal frontend works around this with an explicit Realtime
+-- Broadcast event ("job-taken") sent by the accepting client, independent
+-- of table RLS — see WorkerDashboard.jsx.
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE bookings;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- In-app record of which cleaners were broadcast which jobs, and whether
+-- they've seen it yet (powers the Worker Portal's notification badge).
+CREATE TABLE IF NOT EXISTS worker_notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cleaner_id UUID NOT NULL REFERENCES cleaners(id) ON DELETE CASCADE,
+  booking_id TEXT NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+  sent_at TIMESTAMPTZ DEFAULT NOW(),
+  seen BOOLEAN DEFAULT false
+);
+
+CREATE INDEX IF NOT EXISTS idx_worker_notifications_cleaner_id ON worker_notifications(cleaner_id, sent_at DESC);
+
+ALTER TABLE worker_notifications ENABLE ROW LEVEL SECURITY;
+
+-- Deliberately no INSERT policy — only the notify-workers Edge Function
+-- (service role) ever writes here.
+CREATE POLICY "Cleaners can view own worker notifications"
+  ON worker_notifications FOR SELECT
+  USING (cleaner_id IN (SELECT id FROM cleaners WHERE user_id = auth.uid()));
+
+CREATE POLICY "Cleaners can mark own worker notifications seen"
+  ON worker_notifications FOR UPDATE
+  USING (cleaner_id IN (SELECT id FROM cleaners WHERE user_id = auth.uid()))
+  WITH CHECK (cleaner_id IN (SELECT id FROM cleaners WHERE user_id = auth.uid()));
+
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE worker_notifications;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Edge Function notify-workers: fetches every verified+available cleaner,
+-- sends each a WhatsApp alert (reusing TWILIO_SID/TWILIO_TOKEN/
+-- TWILIO_WHATSAPP_FROM, already set), and inserts one worker_notifications
+-- row per cleaner. Called from Book.jsx (cash path, confirmed synchronously)
+-- and BookingSuccess.jsx (Yoco path, once the redirect back confirms
+-- payment). Idempotent: no-ops if the booking is no longer broadcasting.
+--
+-- send-whatsapp also gained a new type: 'job_accepted', sent by the
+-- Worker Portal to the customer once a cleaner successfully claims their job.

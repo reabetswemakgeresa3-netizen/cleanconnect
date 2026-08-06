@@ -91,7 +91,11 @@ export default function Book() {
       payment_method: paymentMethod,
       created_at: new Date().toISOString(),
       cleaner_id: preselectedCleaner?.id || null,
-      cleaner_assigned: preselectedCleaner?.name || null
+      cleaner_assigned: preselectedCleaner?.name || null,
+      // A customer who picked a specific cleaner already has one — nothing
+      // to broadcast. Everyone else's job goes out to all workers to claim.
+      job_status: preselectedCleaner ? 'accepted' : 'broadcasting',
+      accepted_by: preselectedCleaner?.id || null
     }
 
     try {
@@ -120,7 +124,11 @@ export default function Book() {
 
       // Cash bookings skip Yoco entirely — the cleaner collects payment on
       // completion (WorkerDashboard marks payment_status paid at that point).
+      // They're confirmed immediately (no redirect), so this is where a cash
+      // job's broadcast fires — the Yoco equivalent fires from BookingSuccess
+      // once the redirect back confirms payment actually went through.
       if (paymentMethod === 'cash') {
+        supabase.functions.invoke('notify-workers', { body: { bookingId: bId } }).catch(() => {})
         setStep(5)
         return
       }
