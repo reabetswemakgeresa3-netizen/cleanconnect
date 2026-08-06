@@ -626,3 +626,165 @@ END $$;
 --
 -- send-whatsapp also gained a new type: 'job_accepted', sent by the
 -- Worker Portal to the customer once a cleaner successfully claims their job.
+
+
+-- ============================================================
+-- V14 ADDITIONS — Admin Operations Centre: live activity log
+-- ============================================================
+
+-- Unified, admin-only event feed for the Overview tab's live activity feed,
+-- and doubles as a per-booking timeline source for the Bookings tab.
+CREATE TABLE IF NOT EXISTS activity_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  detail TEXT,
+  booking_id TEXT REFERENCES bookings(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_log_created_at ON activity_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_log_booking_id ON activity_log(booking_id);
+
+ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view activity log"
+  ON activity_log FOR SELECT
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE activity_log;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- SECURITY DEFINER: none of the acting principals (a customer booking,
+-- Postgres itself on signup, a cleaner registering) has any write grant on
+-- activity_log — same reasoning as V11's rating-recompute trigger.
+CREATE OR REPLACE FUNCTION log_booking_activity()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO activity_log (type, title, detail, booking_id)
+    VALUES ('new_booking', 'New booking',
+      NEW.contact_name || ' booked ' || NEW.service_name || ' · ' || COALESCE(NEW.city, ''), NEW.id);
+    RETURN NEW;
+  END IF;
+
+  IF OLD.payment_status IS DISTINCT FROM NEW.payment_status AND NEW.payment_status = 'paid' THEN
+    INSERT INTO activity_log (type, title, detail, booking_id)
+    VALUES ('payment_received', 'Payment received',
+      NEW.contact_name || ' paid for ' || NEW.service_name, NEW.id);
+  END IF;
+
+  IF OLD.job_status IS DISTINCT FROM NEW.job_status AND NEW.job_status = 'accepted' THEN
+    INSERT INTO activity_log (type, title, detail, booking_id)
+    VALUES ('job_accepted', 'Job accepted',
+      COALESCE(NEW.cleaner_assigned, 'A cleaner') || ' accepted ' || NEW.service_name, NEW.id);
+  END IF;
+
+  IF OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'completed' THEN
+    INSERT INTO activity_log (type, title, detail, booking_id)
+    VALUES ('booking_completed', 'Booking completed',
+      NEW.service_name || ' for ' || NEW.contact_name || ' marked complete', NEW.id);
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_log_booking_activity_insert ON bookings;
+CREATE TRIGGER trg_log_booking_activity_insert
+  AFTER INSERT ON bookings
+  FOR EACH ROW EXECUTE FUNCTION log_booking_activity();
+
+DROP TRIGGER IF EXISTS trg_log_booking_activity_update ON bookings;
+CREATE TRIGGER trg_log_booking_activity_update
+  AFTER UPDATE ON bookings
+  FOR EACH ROW EXECUTE FUNCTION log_booking_activity();
+
+CREATE OR REPLACE FUNCTION log_profile_activity()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO activity_log (type, title, detail)
+  VALUES ('new_signup', 'New customer signup', COALESCE(NEW.full_name, NEW.phone, NEW.email, 'A new user'));
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_log_profile_activity ON profiles;
+CREATE TRIGGER trg_log_profile_activity
+  AFTER INSERT ON profiles
+  FOR EACH ROW EXECUTE FUNCTION log_profile_activity();
+
+CREATE OR REPLACE FUNCTION log_cleaner_activity()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO activity_log (type, title, detail)
+  VALUES ('new_cleaner', 'New cleaner registration', NEW.name || ' · ' || COALESCE(NEW.location, ''));
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_log_cleaner_activity ON cleaners;
+CREATE TRIGGER trg_log_cleaner_activity
+  AFTER INSERT ON cleaners
+  FOR EACH ROW EXECUTE FUNCTION log_cleaner_activity();
+
+
+-- ============================================================
+-- V15 ADDITIONS — Admin Operations Centre: workers, messages, notes
+-- ============================================================
+
+-- Admins can verify/unverify/deactivate any cleaner, and force-assign a
+-- cleaner to a stuck broadcasting job (Job Broadcast Monitor tab).
+CREATE POLICY "Admins can update all cleaners"
+  ON cleaners FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+-- Contact form submissions get a read/resolved workflow + an internal
+-- tracking note, both admin-only to write.
+ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS read BOOLEAN DEFAULT false;
+ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS admin_notes TEXT;
+
+CREATE POLICY "Admins can update contact messages"
+  ON contact_messages FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+-- Free-text "known issues" board for the System Health tab — there's no
+-- API access to Edge Function invocation logs from a client app, so this is
+-- the documented fallback for tracking problems admins notice manually.
+CREATE TABLE IF NOT EXISTS admin_notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  note TEXT NOT NULL,
+  created_by UUID REFERENCES admin_users(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE admin_notes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view admin notes"
+  ON admin_notes FOR SELECT
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+CREATE POLICY "Admins can add admin notes"
+  ON admin_notes FOR INSERT
+  WITH CHECK (created_by = auth.uid() AND EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+CREATE POLICY "Admins can delete admin notes"
+  ON admin_notes FOR DELETE
+  USING (EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid()));
+
+-- Edge Functions: system-health (admin-only; pings Twilio, reports the
+-- process-refund function's Yoco key mode without exposing the key itself).
