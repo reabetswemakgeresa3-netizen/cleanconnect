@@ -80,10 +80,19 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [reviewedIds, setReviewedIds] = useState(new Set())
 
   useEffect(() => {
     fetchBookings()
   }, [user])
+
+  // Drives the "Rate your cleaner" banner on completed booking cards —
+  // fetched once as a set of IDs rather than per-card, to avoid N queries.
+  useEffect(() => {
+    if (!user) return
+    supabase.from('reviews').select('booking_id').eq('user_id', user.id)
+      .then(({ data }) => setReviewedIds(new Set((data || []).map(r => r.booking_id))))
+  }, [user, bookings])
 
   // Live sync while a cleaner progresses through the Active Job flow —
   // en-route/arrived/completed should update here without a manual refresh.
@@ -210,6 +219,7 @@ export default function Dashboard() {
               <BookingCard
                 key={booking.id}
                 booking={booking}
+                needsReview={booking.status === 'completed' && !reviewedIds.has(booking.id)}
                 onClick={() => setSelectedBooking(booking)}
               />
             ))}
@@ -225,7 +235,7 @@ export default function Dashboard() {
   )
 }
 
-function BookingCard({ booking, onClick }) {
+function BookingCard({ booking, needsReview, onClick }) {
   const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
   const live = liveJobLabel(booking)
 
@@ -279,6 +289,16 @@ function BookingCard({ booking, onClick }) {
       </div>
 
       <div style={{ color: 'var(--text-dim)', fontSize: 18, flexShrink: 0 }}>›</div>
+
+      {needsReview && (
+        <div style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+          background: 'rgba(255,184,0,0.1)', border: '1px solid rgba(255,184,0,0.25)',
+          borderRadius: 10, padding: '9px 14px', color: '#C46A00', fontSize: 13, fontWeight: 600
+        }}>
+          <Icon name="star" size={14} color="#C46A00" /> Rate your cleaner
+        </div>
+      )}
     </div>
   )
 }

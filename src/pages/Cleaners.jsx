@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Icon, InitialsAvatar } from '../components/Icons'
+import StarPicker from '../components/StarPicker'
 
 // Demo profiles are illustrative only — they don't exist in the cleaners
 // table, so "Book" must fall back to a generic booking rather than passing
@@ -205,6 +206,10 @@ export default function Cleaners() {
 
 function CleanerCard({ cleaner, onClick }) {
   const [hovered, setHovered] = useState(false)
+  // Demo profiles are illustrative and always show their hardcoded rating;
+  // real cleaners default to rating=5.0 with zero reviews, which would
+  // otherwise misleadingly read as "5-star rated" with nothing behind it.
+  const hasReviews = cleaner.isDemo || cleaner.review_count > 0
 
   return (
     <div
@@ -232,12 +237,16 @@ function CleanerCard({ cleaner, onClick }) {
           }} />
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', marginBottom: 4 }}>
-            <span style={{ color: '#C46A00', fontSize: 14 }}>★</span>
-            <span style={{ color: 'var(--text)', fontWeight: 700, fontSize: 16 }}>{cleaner.rating}</span>
-          </div>
+          {hasReviews ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', marginBottom: 4 }}>
+              <span style={{ color: '#C46A00', fontSize: 14 }}>★</span>
+              <span style={{ color: 'var(--text)', fontWeight: 700, fontSize: 16 }}>{cleaner.rating}</span>
+            </div>
+          ) : (
+            <div style={{ color: 'var(--text-dim)', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>No reviews yet</div>
+          )}
           <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
-            {cleaner.total_jobs} jobs{cleaner.review_count > 0 ? ` · ${cleaner.review_count} review${cleaner.review_count === 1 ? '' : 's'}` : ''}
+            {cleaner.total_jobs} jobs{hasReviews && cleaner.review_count > 0 ? ` · ${cleaner.review_count} review${cleaner.review_count === 1 ? '' : 's'}` : ''}
           </div>
         </div>
       </div>
@@ -281,6 +290,16 @@ function CleanerCard({ cleaner, onClick }) {
 }
 
 function CleanerModal({ cleaner, onClose }) {
+  const hasReviews = cleaner.isDemo || cleaner.review_count > 0
+  const [reviews, setReviews] = useState(cleaner.isDemo ? [] : undefined) // undefined = loading
+
+  useEffect(() => {
+    if (cleaner.isDemo) return
+    supabase.from('reviews').select('*').eq('cleaner_id', cleaner.id)
+      .order('created_at', { ascending: false }).limit(10)
+      .then(({ data }) => setReviews(data || []))
+  }, [cleaner.id, cleaner.isDemo])
+
   return (
     <div onClick={onClose} style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 200,
@@ -313,7 +332,9 @@ function CleanerModal({ cleaner, onClose }) {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 24 }}>
           {[
-            { label: cleaner.review_count > 0 ? `${cleaner.review_count} Review${cleaner.review_count === 1 ? '' : 's'}` : 'Rating', value: `★ ${cleaner.rating}` },
+            hasReviews
+              ? { label: cleaner.review_count > 0 ? `${cleaner.review_count} Review${cleaner.review_count === 1 ? '' : 's'}` : 'Rating', value: `★ ${cleaner.rating}` }
+              : { label: 'Rating', value: 'No reviews yet' },
             { label: 'Jobs Done', value: cleaner.total_jobs },
             { label: 'Response', value: cleaner.response_time }
           ].map(s => (
@@ -353,6 +374,32 @@ function CleanerModal({ cleaner, onClose }) {
             ))}
           </div>
         </div>
+
+        {/* Reviews */}
+        {!cleaner.isDemo && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Reviews</div>
+            {reviews === undefined ? (
+              <p style={{ fontSize: 13.5, color: 'var(--text-dim)' }}>Loading reviews...</p>
+            ) : reviews.length === 0 ? (
+              <p style={{ fontSize: 13.5, color: 'var(--text-dim)' }}>No reviews yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{ background: 'var(--tile-2)', borderRadius: 12, padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <StarPicker value={r.rating} readOnly size={15} />
+                      <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>
+                        {r.reviewer_name || 'Customer'} · {new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                    {r.comment && <p style={{ fontSize: 13.5, color: 'var(--text-muted)', lineHeight: 1.6 }}>"{r.comment}"</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <Link to={cleaner.isDemo ? '/book' : `/book?cleaner=${cleaner.id}`} className="btn-primary" style={{ width: '100%', justifyContent: 'center', display: 'flex' }}>
           Book {cleaner.name.split(' ')[0]} →

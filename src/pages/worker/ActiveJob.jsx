@@ -80,15 +80,25 @@ export default function ActiveJob() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // Geocode the destination once the booking loads
+  // Geocode the destination once the booking loads, caching the result back
+  // onto the booking row so later opens (and the Uber deep link) don't need
+  // to re-hit Nominatim every time.
   useEffect(() => {
     if (!booking) return
+    if (booking.lat != null && booking.lng != null) {
+      setDestination({ lat: booking.lat, lng: booking.lng })
+      return
+    }
     let cancelled = false
     setDestination(undefined)
     geocodeAddress(`${booking.address}, ${booking.city}, ${booking.province}, South Africa`)
-      .then(pos => { if (!cancelled) setDestination(pos) })
+      .then(pos => {
+        if (cancelled) return
+        setDestination(pos)
+        if (pos) supabase.from('bookings').update({ lat: pos.lat, lng: pos.lng }).eq('id', booking.id).then(() => {})
+      })
     return () => { cancelled = true }
-  }, [booking?.address, booking?.city, booking?.province])
+  }, [booking?.lat, booking?.lng, booking?.address, booking?.city, booking?.province, booking?.id])
 
   // Live-updates the booking if it changes elsewhere (e.g. Admin intervenes)
   useEffect(() => {
@@ -209,8 +219,9 @@ export default function ActiveJob() {
 
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}`
 
+  const uberNickname = `${booking.contact_name}'s booking`
   const uberQuery = destination
-    ? `dropoff[latitude]=${destination.lat}&dropoff[longitude]=${destination.lng}&dropoff[formatted_address]=${encodeURIComponent(fullAddress)}`
+    ? `dropoff[latitude]=${destination.lat}&dropoff[longitude]=${destination.lng}&dropoff[formatted_address]=${encodeURIComponent(fullAddress)}&dropoff[nickname]=${encodeURIComponent(uberNickname)}`
     : `dropoff[formatted_address]=${encodeURIComponent(fullAddress)}`
   const uberDeepLink = `uber://?action=setPickup&pickup=my_location&${uberQuery}`
   const uberWebFallback = `https://m.uber.com/ul/?action=setPickup&pickup=my_location&${uberQuery}`
@@ -223,7 +234,7 @@ export default function ActiveJob() {
     setTimeout(() => {
       window.removeEventListener('blur', onBlur)
       if (stillHere) window.location.href = uberWebFallback
-    }, 1200)
+    }, 1500)
   }
 
   const currentStepIndex = STEP_ORDER.indexOf(booking.job_status)

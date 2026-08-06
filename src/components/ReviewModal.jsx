@@ -19,7 +19,10 @@ export default function ReviewModal({ booking, onClose, onSubmitted }) {
         cleaner_id: booking.cleaner_id,
         user_id: booking.user_id,
         rating,
-        comment: comment.trim() || null
+        comment: comment.trim() || null,
+        // Reviews are public but profiles are private — capture just the
+        // first name here rather than joining to profiles for display later.
+        reviewer_name: booking.contact_name?.split(' ')[0] || 'Customer'
       }).select().single()
       if (insertError) throw insertError
       onSubmitted(data)

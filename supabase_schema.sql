@@ -806,3 +806,31 @@ ALTER TABLE bookings ADD CONSTRAINT bookings_job_status_check
 -- Edge Function: send-whatsapp gained three new `type` branches (en_route,
 -- arrived, job_completed) sending the customer progress updates as the
 -- cleaner moves through the Active Job screen's status controls.
+
+
+-- ============================================================
+-- V17 ADDITIONS — Review authorship controls, public review display,
+-- Uber deep-link destination caching
+-- ============================================================
+
+-- Reviews were immutable-only under V11; the author can now fix/remove
+-- their own feedback.
+CREATE POLICY "Authors can update own reviews"
+  ON reviews FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Authors can delete own reviews"
+  ON reviews FOR DELETE USING (auth.uid() = user_id);
+
+-- Reviews are public (V11's "Anyone can view reviews"), but profiles are
+-- intentionally private (own-row-only RLS) -- so the reviewer's first name
+-- is captured at submission time instead of joined from profiles later,
+-- keeping the public Cleaners page and Admin's Workers tab from needing
+-- any profiles access at all.
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS reviewer_name TEXT;
+
+-- Cache the geocoded destination on the booking itself so the Active Job
+-- screen's map and Uber deep link don't need to re-hit Nominatim on every
+-- load, and the dropoff pin is reliably pre-filled rather than depending on
+-- geocoding finishing before the cleaner taps the button.
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;

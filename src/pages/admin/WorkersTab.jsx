@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../../lib/supabase'
 import { ServiceBadge, InitialsAvatar } from '../../components/Icons'
 import LiveTrackingMap from '../../components/LiveTrackingMap'
+import StarPicker from '../../components/StarPicker'
 import { STATUS_CONFIG, formatCurrency } from '../../data/services'
 import { EmptyState, LoadingState, Pagination } from './shared'
 
@@ -80,7 +81,7 @@ export default function WorkersTab({ cleaners, bookings, loading, updateCleaner 
                       <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 15 }}>{c.name}</span>
                       {c.verified && <span style={{ color: '#00C896', fontSize: 11, fontWeight: 600 }}>✓ Verified</span>}
                     </div>
-                    <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{c.phone || '—'} · ★ {c.rating} · {c.total_jobs} jobs</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>{c.phone || '—'} · {c.review_count > 0 ? `★ ${c.rating}` : 'No reviews yet'} · {c.total_jobs} jobs</div>
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-dim)', minWidth: 120 }}>
                     {accepted} accepted{notified ? ` · ${missed} missed` : ''}
@@ -128,11 +129,18 @@ function actionBtn(active) {
 
 function WorkerModal({ cleaner, bookings, onClose }) {
   const [now] = useState(() => Date.now())
+  const [reviews, setReviews] = useState(undefined) // undefined = loading
   const completed = bookings.filter(b => b.status === 'completed')
   const earnings = completed.filter(b => b.payment_status === 'paid').reduce((s, b) => s + (b.amount || 0), 0)
   const isSharing = cleaner.current_lat != null && cleaner.location_updated_at &&
     (now - new Date(cleaner.location_updated_at).getTime()) < 5 * 60 * 1000
   const sorted = bookings.slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+
+  useEffect(() => {
+    supabase.from('reviews').select('*').eq('cleaner_id', cleaner.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setReviews(data || []))
+  }, [cleaner.id])
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'calc(24px + var(--sat)) calc(24px + var(--sar)) calc(24px + var(--sab)) calc(24px + var(--sal))', backdropFilter: 'blur(6px)' }}>
@@ -152,7 +160,7 @@ function WorkerModal({ cleaner, bookings, onClose }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 24 }}>
           {[
-            { label: 'Rating', value: `★ ${cleaner.rating}` },
+            { label: 'Rating', value: cleaner.review_count > 0 ? `★ ${cleaner.rating}` : 'No reviews yet' },
             { label: 'Jobs Completed', value: completed.length },
             { label: 'Total Earnings', value: formatCurrency(earnings) },
           ].map(s => (
@@ -167,6 +175,27 @@ function WorkerModal({ cleaner, bookings, onClose }) {
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Live Location</div>
             <LiveTrackingMap cleanerId={cleaner.id} cleanerName={cleaner.name} />
+          </div>
+        )}
+
+        <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Reviews</div>
+        {reviews === undefined ? (
+          <p style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 24 }}>Loading reviews...</p>
+        ) : reviews.length === 0 ? (
+          <EmptyState icon="star" message="No reviews yet" />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+            {reviews.map(r => (
+              <div key={r.id} style={{ background: 'var(--tile-2)', borderRadius: 10, padding: '10px 14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <StarPicker value={r.rating} readOnly size={14} />
+                  <span style={{ fontSize: 11.5, color: 'var(--text-dim)' }}>
+                    {r.reviewer_name || 'Customer'} · {new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+                {r.comment && <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>"{r.comment}"</p>}
+              </div>
+            ))}
           </div>
         )}
 
