@@ -1,20 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { Icon, ServiceBadge } from '../../components/Icons'
 import PinSpinner from '../../components/PinSpinner'
-import { SERVICES, STATUS_CONFIG, formatCurrency } from '../../data/services'
+import { STATUS_CONFIG, formatCurrency } from '../../data/services'
 
-// What the worker can do next for each booking status
-const NEXT_ACTION = {
-  pending: { to: 'confirmed', label: 'Accept Job' },
-  confirmed: { to: 'in-progress', label: 'Start Job' },
-  'in-progress': { to: 'completed', label: 'Mark Complete' }
-}
+// Job states that mean "the cleaner has an active job in flight" — surfaced
+// via the Current Job banner and used to route back into /worker/job/:id.
+const ACTIVE_JOB_STATUSES = ['accepted', 'en-route', 'in-progress']
 
 export default function WorkerDashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [justCompleted] = useState(() => location.state?.justCompleted || null)
   const [cleaner, setCleaner] = useState(null)
   const [jobs, setJobs] = useState([])
   const [availableJobs, setAvailableJobs] = useState([])
@@ -96,18 +96,6 @@ export default function WorkerDashboard() {
     return () => { supabase.removeChannel(channel); supabase.removeChannel(notifChannel); jobsChannelRef.current = null }
   }, [cleaner, fetchData])
 
-  const updateStatus = async (jobId, status) => {
-    const job = jobs.find(j => j.id === jobId)
-    // Cash jobs have no online payment step — completion is when the
-    // cleaner actually collects the money, so mark it paid at that point.
-    const updates = status === 'completed' && job?.payment_method === 'cash'
-      ? { status, payment_status: 'paid' }
-      : { status }
-    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, ...updates } : j))
-    const { error } = await supabase.from('bookings').update(updates).eq('id', jobId)
-    if (error) fetchData() // revert optimistic update if it failed
-  }
-
   // Race-safe accept: the WHERE job_status='broadcasting' only matches if
   // nobody else claimed it first — Postgres re-checks this per concurrent
   // update, so exactly one caller ever gets a non-empty result back.
@@ -131,10 +119,11 @@ export default function WorkerDashboard() {
     const accepted = data[0]
     setAvailableJobs(prev => prev.filter(j => j.id !== jobId))
     jobsChannelRef.current?.send({ type: 'broadcast', event: 'job-taken', payload: { bookingId: jobId } })
-    fetchData()
     supabase.functions.invoke('send-whatsapp', {
       body: { type: 'job_accepted', booking: accepted, customerPhone: accepted.contact_phone, customerName: accepted.contact_name }
     }).catch(() => {})
+    // Straight into the Active Job screen — don't leave them on the list.
+    navigate(`/worker/job/${jobId}`)
   }
 
   const openJobsTab = () => {
@@ -167,6 +156,7 @@ export default function WorkerDashboard() {
   const active = jobs.filter(j => !['completed', 'cancelled'].includes(j.status))
   const done = jobs.filter(j => ['completed', 'cancelled'].includes(j.status))
   const shown = filter === 'active' ? active : filter === 'done' ? done : []
+  const currentJob = active.find(j => ACTIVE_JOB_STATUSES.includes(j.job_status))
 
   const stats = {
     today: active.filter(j => j.booking_date === new Date().toISOString().slice(0, 10)).length,
@@ -203,6 +193,44 @@ export default function WorkerDashboard() {
           </button>
         </div>
 
+        {/* Just-completed confirmation — shown once, from navigation state */}
+        {justCompleted && (
+          <div style={{
+            background: 'rgba(0,200,150,0.08)', border: '1px solid rgba(0,200,150,0.3)', borderRadius: 16,
+            padding: '20px 22px', marginBottom: 28, display: 'flex', alignItems: 'center', gap: 16
+          }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(0,200,150,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name="checkCircle" size={22} color="#00C896" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: 16 }}>Job completed! Great work 🎉</div>
+              <div style={{ fontSize: 13.5, color: 'var(--text-muted)', marginTop: 2 }}>
+                {justCompleted.serviceName} · {formatCurrency(justCompleted.amount)} earned
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Current Job — always surfaced so an active job is never hidden */}
+        {currentJob && (
+          <Link to={`/worker/job/${currentJob.id}`} style={{
+            display: 'flex', alignItems: 'center', gap: 16, background: 'var(--tile)',
+            border: '1.5px solid #00C896', borderRadius: 16, padding: '18px 22px', marginBottom: 28
+          }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(0,200,150,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Icon name="radio" size={22} color="#00C896" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, color: '#00C896', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>Current Job</div>
+              <div style={{ fontWeight: 700, color: 'var(--text)', fontSize: 15.5 }}>{currentJob.service_name} · {currentJob.contact_name}</div>
+              <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 2 }}>
+                {currentJob.job_status === 'accepted' ? 'Ready to head out' : currentJob.job_status === 'en-route' ? "You're on the way" : 'Cleaning in progress'}
+              </div>
+            </div>
+            <Icon name="chevronRight" size={18} color="#00C896" style={{ flexShrink: 0 }} />
+          </Link>
+        )}
+
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 14, marginBottom: 32 }}>
           {[
@@ -219,8 +247,10 @@ export default function WorkerDashboard() {
           ))}
         </div>
 
-        {/* Live location sharing — customers see this on their tracking map */}
-        {active.some(j => j.status === 'in-progress') && (
+        {/* Live location sharing — customers see this on their tracking map.
+            The Active Job screen starts this automatically on "I'm on my
+            way"; this is a manual fallback/override. */}
+        {active.some(j => ['en-route', 'in-progress'].includes(j.job_status)) && (
           <LocationShareCard cleaner={cleaner} />
         )}
 
@@ -276,7 +306,7 @@ export default function WorkerDashboard() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {shown.map(job => (
-                <JobCard key={job.id} job={job} onStatusChange={status => updateStatus(job.id, status)} />
+                <JobCard key={job.id} job={job} />
               ))}
             </div>
           )
@@ -401,16 +431,10 @@ function AvailableJobCard({ job, taken, onAccept }) {
   )
 }
 
-function JobCard({ job, onStatusChange }) {
+function JobCard({ job }) {
   const conf = STATUS_CONFIG[job.status] || STATUS_CONFIG.pending
-  const action = NEXT_ACTION[job.status]
   const fullAddress = `${job.address}, ${job.city}, ${job.province}`
-
-  // Uber universal link: opens the app on mobile (web on desktop) with
-  // pickup at the cleaner's current location and drop-off at the job address.
-  const uberUrl = 'https://m.uber.com/ul/?action=setPickup&pickup=my_location'
-    + `&dropoff[nickname]=${encodeURIComponent(`CleanConnect Job ${job.id}`)}`
-    + `&dropoff[formatted_address]=${encodeURIComponent(fullAddress)}`
+  const isActive = ACTIVE_JOB_STATUSES.includes(job.job_status)
 
   return (
     <div style={{ background: 'var(--tile)', border: '1px solid var(--border)', borderRadius: 16, padding: '22px 24px' }}>
@@ -443,24 +467,15 @@ function JobCard({ job, onStatusChange }) {
         </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' }}>
-        {action && (
-          <button onClick={() => onStatusChange(action.to)} className="btn-primary"
-            style={{ padding: '10px 20px', fontSize: 14 }}>
-            {action.label}
-          </button>
-        )}
-        <a href={uberUrl} target="_blank" rel="noreferrer"
-          style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--tile-2)', color: 'var(--text)', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <Icon name="car" size={16} color="var(--text)" /> Uber to Job
-        </a>
-        <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}`}
-          target="_blank" rel="noreferrer"
-          style={{ padding: '10px 18px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--tile-2)', color: 'var(--text)', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-          <Icon name="navigation" size={15} color="var(--text)" /> Directions
-        </a>
-      </div>
+      {/* Progression (map, directions, status controls) now lives on the
+          dedicated Active Job screen — this card just links into it. */}
+      {isActive && (
+        <div style={{ marginTop: 18 }}>
+          <Link to={`/worker/job/${job.id}`} className="btn-primary" style={{ padding: '10px 20px', fontSize: 14, display: 'inline-flex' }}>
+            View Active Job →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

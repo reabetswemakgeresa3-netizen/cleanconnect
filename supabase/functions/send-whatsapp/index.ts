@@ -80,6 +80,27 @@ serve(async (req) => {
         const result = await sendMessage(customerWA, msg)
         messages.push({ to: customerWA, sid: result.sid })
       }
+    } else if (type === 'en_route') {
+      // Cleaner tapped "I'm on my way" on the Active Job screen.
+      if (customerWA) {
+        const msg = `🚗 *${booking.cleaner_assigned || 'Your cleaner'} is on the way!*\n\nHi ${customerName}, ${booking.cleaner_assigned || 'your cleaner'} is on the way to your booking!\n\n📋 *Ref:* ${booking.id}\n📍 *Address:* ${booking.address}, ${booking.city}\n\nTrack their arrival from your dashboard. 🇿🇦`
+        const result = await sendMessage(customerWA, msg)
+        messages.push({ to: customerWA, sid: result.sid })
+      }
+    } else if (type === 'arrived') {
+      // Cleaner tapped "I've arrived / Start cleaning".
+      if (customerWA) {
+        const msg = `🔔 *Your cleaner has arrived!*\n\nHi ${customerName}, ${booking.cleaner_assigned || 'your cleaner'} has arrived and started cleaning.\n\n📋 *Ref:* ${booking.id}\n🧹 *Service:* ${booking.service_name}\n\nSit back and relax! ✨`
+        const result = await sendMessage(customerWA, msg)
+        messages.push({ to: customerWA, sid: result.sid })
+      }
+    } else if (type === 'job_completed') {
+      // Cleaner tapped "Mark job as done".
+      if (customerWA) {
+        const msg = `✨ *Cleaning Complete!*\n\nHi ${customerName}, your space is now spotless!\n\n📋 *Ref:* ${booking.id}\n🧹 *Service:* ${booking.service_name}\n\nThank you for using CleanConnect 🇿🇦\nPlease take a moment to rate your experience in the app.`
+        const result = await sendMessage(customerWA, msg)
+        messages.push({ to: customerWA, sid: result.sid })
+      }
     } else {
       // New booking — message to customer
       if (customerWA) {

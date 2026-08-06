@@ -15,6 +15,17 @@ const PAYMENT_LABELS = {
   paid: '✓ Paid', unpaid: 'Pending', refunded: 'Refunded', 'pending-review': 'Refund under review'
 }
 
+// job_status carries the finer-grained progress during the cleaner's Active
+// Job flow (the coarse "status" column stays 'confirmed' for the whole
+// en-route/in-progress window, only syncing back up at completion) — this
+// derives what to actually show the customer.
+function liveJobLabel(booking) {
+  if (booking.job_status === 'en-route') return { label: 'Cleaner on the way', color: '#276EF1' }
+  if (booking.job_status === 'in-progress') return { label: 'Cleaning in progress', color: '#00C896' }
+  if (booking.status === 'completed') return { label: 'Completed — please rate your experience', color: '#00C896' }
+  return null
+}
+
 const DEMO_BOOKINGS = [
   {
     id: 'CC-DEMO001',
@@ -72,6 +83,21 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchBookings()
+  }, [user])
+
+  // Live sync while a cleaner progresses through the Active Job flow —
+  // en-route/arrived/completed should update here without a manual refresh.
+  useEffect(() => {
+    if (!user) return
+    const channel = supabase
+      .channel(`dashboard-bookings-${user.id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bookings', filter: `user_id=eq.${user.id}` },
+        payload => {
+          setBookings(prev => prev.map(b => b.id === payload.new.id ? { ...b, ...payload.new } : b))
+          setSelectedBooking(prev => prev && prev.id === payload.new.id ? { ...prev, ...payload.new } : prev)
+        })
+      .subscribe()
+    return () => supabase.removeChannel(channel)
   }, [user])
 
   const fetchBookings = async () => {
@@ -201,6 +227,7 @@ export default function Dashboard() {
 
 function BookingCard({ booking, onClick }) {
   const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
+  const live = liveJobLabel(booking)
 
   return (
     <div onClick={onClick} style={{
@@ -227,6 +254,11 @@ function BookingCard({ booking, onClick }) {
           <span className={`badge ${statusConf.color}`} style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12 }}>
             {statusConf.label}
           </span>
+          {live && live.label !== 'Completed — please rate your experience' && (
+            <span style={{ padding: '3px 10px', borderRadius: 100, fontSize: 12, fontWeight: 600, background: `${live.color}1a`, color: live.color }}>
+              {live.label}
+            </span>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <InfoChip icon="pin" text={`${booking.city}, ${booking.province}`} />
@@ -253,10 +285,13 @@ function BookingCard({ booking, onClick }) {
 
 function BookingModal({ booking, onClose, onCancelled }) {
   const statusConf = STATUS_CONFIG[booking.status] || STATUS_CONFIG.pending
+  const live = liveJobLabel(booking)
   const [confirmingCancel, setConfirmingCancel] = useState(false)
   const [cancelling, setCancelling] = useState(false)
   const [cancelError, setCancelError] = useState('')
-  const canCancel = booking.status === 'pending' || booking.status === 'confirmed'
+  // Once the cleaner is en route or actively cleaning, it's too late to cancel.
+  const canCancel = (booking.status === 'pending' || booking.status === 'confirmed')
+    && !['en-route', 'in-progress'].includes(booking.job_status)
   const policy = canCancel ? getCancellationPolicy(booking.booking_date, booking.time_slot) : null
 
   const [review, setReview] = useState(undefined) // undefined = loading, null = none yet
@@ -313,8 +348,9 @@ function BookingModal({ booking, onClose, onCancelled }) {
   const steps = [
     { label: 'Booking Received', done: true },
     { label: 'Payment Confirmed', done: booking.payment_status === 'paid' },
-    { label: 'Cleaner Assigned', done: ['in-progress','confirmed','completed'].includes(booking.status) },
-    { label: 'Service In Progress', done: ['in-progress','completed'].includes(booking.status) },
+    { label: 'Cleaner Assigned', done: !!booking.cleaner_id },
+    { label: 'Cleaner On The Way', done: ['en-route', 'in-progress'].includes(booking.job_status) || booking.status === 'completed' },
+    { label: 'Service In Progress', done: booking.job_status === 'in-progress' || booking.status === 'completed' },
     { label: 'Service Completed', done: booking.status === 'completed' }
   ]
 
@@ -337,7 +373,14 @@ function BookingModal({ booking, onClose, onCancelled }) {
               <ServiceBadge id={booking.service_id} size={40} iconSize={20} />
               <h2 style={{ fontSize: 22 }}>{booking.service_name}</h2>
             </div>
-            <span className={`badge ${statusConf.color}`}>{statusConf.label}</span>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <span className={`badge ${statusConf.color}`}>{statusConf.label}</span>
+              {live && (
+                <span style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, fontWeight: 600, background: `${live.color}1a`, color: live.color, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {live.label}
+                </span>
+              )}
+            </div>
           </div>
           <button onClick={onClose} style={{
             background: 'var(--tile-2)', border: '1px solid var(--border)', color: 'var(--text-muted)',
@@ -403,7 +446,7 @@ function BookingModal({ booking, onClose, onCancelled }) {
         )}
 
         {/* Live cleaner tracking */}
-        {booking.status === 'in-progress' && booking.cleaner_id && (
+        {['en-route', 'in-progress'].includes(booking.job_status) && booking.cleaner_id && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 600, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
               <Icon name="radio" size={16} color="#00C896" style={{ verticalAlign: '-2px', marginRight: 6 }} />Track Your Cleaner

@@ -788,3 +788,21 @@ CREATE POLICY "Admins can delete admin notes"
 
 -- Edge Functions: system-health (admin-only; pings Twilio, reports the
 -- process-refund function's Yoco key mode without exposing the key itself).
+
+-- ============================================================
+-- V16 ADDITIONS — Worker Portal: post-acceptance active job flow
+-- ============================================================
+
+-- job_status gains 'en-route' as an intermediate stage between a cleaner
+-- accepting a job and starting it, driving the Active Job screen's
+-- progressive status controls ("I'm on my way" -> "I've arrived" ->
+-- "Mark job as done"). Deliberately kept separate from bookings.status
+-- (which stays 'confirmed' throughout this window) to avoid touching the
+-- many places that assume status has exactly 5 values.
+ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_job_status_check;
+ALTER TABLE bookings ADD CONSTRAINT bookings_job_status_check
+  CHECK (job_status IN ('broadcasting','accepted','en-route','in-progress','completed','cancelled'));
+
+-- Edge Function: send-whatsapp gained three new `type` branches (en_route,
+-- arrived, job_completed) sending the customer progress updates as the
+-- cleaner moves through the Active Job screen's status controls.

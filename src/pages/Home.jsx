@@ -140,13 +140,16 @@ export default function Home() {
     )
   }, [])
 
-  // If there's an in-progress booking with an assigned cleaner, surface it above the fold
+  // If there's a booking whose cleaner is en route or actively cleaning,
+  // surface it above the fold. job_status carries this during the window
+  // where the coarse "status" column is still just 'confirmed'.
   useEffect(() => {
     if (!user) return
     let cancelled = false
     supabase.from('bookings')
-      .select('id, cleaner_id, status')
-      .eq('user_id', user.id).eq('status', 'in-progress').not('cleaner_id', 'is', null)
+      .select('id, cleaner_id, status, job_status')
+      .eq('user_id', user.id).not('cleaner_id', 'is', null)
+      .or('status.eq.in-progress,job_status.in.(en-route,in-progress)')
       .order('created_at', { ascending: false }).limit(1).maybeSingle()
       .then(async ({ data: booking }) => {
         if (cancelled || !booking) return
@@ -175,6 +178,28 @@ export default function Home() {
     return () => { supabase.removeChannel(channel) }
   }, [active?.cleaner?.id])
 
+  // Live-updates the booking itself (job_status progressing, or completing
+  // and dropping off this card) while it's shown.
+  useEffect(() => {
+    const bookingId = active?.booking?.id
+    if (!bookingId) return
+    const channel = supabase
+      .channel(`home-booking-${bookingId}`)
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'bookings', filter: `id=eq.${bookingId}` },
+        (payload) => {
+          const row = payload.new
+          if (!row) return
+          if (row.status === 'completed' || !['en-route', 'in-progress'].includes(row.job_status)) {
+            setActive(null)
+          } else {
+            setActive(prev => prev ? { ...prev, booking: { ...prev.booking, ...row } } : prev)
+          }
+        })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [active?.booking?.id])
+
   const ctaHandlers = [
     () => navigate(user ? '/book' : '/signup'),
     () => navigate('/services'),
@@ -202,7 +227,7 @@ export default function Home() {
         {/* Active booking card — only when there's a live job to show */}
         {active && (
           <Motion.div {...fadeUp(1)} style={{ marginBottom: 16 }}>
-            <ActiveBookingCard cleaner={active.cleaner} cleanerPos={cleanerPos} userPos={userPos} />
+            <ActiveBookingCard booking={active.booking} cleaner={active.cleaner} cleanerPos={cleanerPos} userPos={userPos} />
           </Motion.div>
         )}
 
@@ -342,8 +367,9 @@ export default function Home() {
   )
 }
 
-function ActiveBookingCard({ cleaner, cleanerPos, userPos }) {
+function ActiveBookingCard({ booking, cleaner, cleanerPos, userPos }) {
   const eta = cleanerPos ? etaMins(cleanerPos, userPos) : null
+  const cleaning = booking?.job_status === 'in-progress'
   return (
     <Link to="/dashboard" style={{
       display: 'block', background: 'var(--surface)', border: '1px solid var(--border)',
@@ -367,9 +393,11 @@ function ActiveBookingCard({ cleaner, cleanerPos, userPos }) {
       </div>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 12.5, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cleaner.name} is on the way</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {cleaning ? `${cleaner.name} is cleaning now` : `${cleaner.name} is on the way`}
+          </div>
           <div style={{ fontSize: 16, fontWeight: 700, color: '#00C896' }}>
-            {eta != null ? `Arriving in ${eta} mins` : 'Live tracking active'}
+            {cleaning ? 'Cleaning in progress' : eta != null ? `Arriving in ${eta} mins` : 'Live tracking active'}
           </div>
         </div>
         <Icon name="chevronRight" size={18} color="var(--text-dim)" style={{ flexShrink: 0 }} />

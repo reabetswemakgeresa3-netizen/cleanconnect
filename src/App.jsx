@@ -22,6 +22,7 @@ import Dashboard from './pages/Dashboard'
 import Admin from './pages/Admin'
 import WorkerDashboard from './pages/worker/WorkerDashboard'
 import WorkerRegister from './pages/worker/WorkerRegister'
+import ActiveJob from './pages/worker/ActiveJob'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import Contact from './pages/Contact'
@@ -54,6 +55,7 @@ function AppShell() {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/worker" element={<ProtectedRoute><WorkerDashboard /></ProtectedRoute>} />
         <Route path="/worker/register" element={<ProtectedRoute><WorkerRegister /></ProtectedRoute>} />
+        <Route path="/worker/job/:bookingId" element={<ProtectedRoute><ActiveJob /></ProtectedRoute>} />
         <Route path="/account" element={<Account />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/terms" element={<Terms />} />
