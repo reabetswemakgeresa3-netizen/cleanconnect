@@ -172,7 +172,7 @@ export default function Admin() {
             const count = t.id === 'unassigned' ? unassignedCount : t.id === 'broadcast' ? broadcastingCount : undefined
             return (
               <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-                padding: '9px 14px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                padding: '9px 14px', borderRadius: 9, border: 'none', cursor: 'pointer', minHeight: 44,
                 background: activeTab === t.id ? '#00C896' : 'transparent',
                 color: activeTab === t.id ? '#FFFFFF' : 'var(--text-muted)',
                 fontSize: 12.5, fontWeight: activeTab === t.id ? 600 : 400, transition: 'all 0.2s',

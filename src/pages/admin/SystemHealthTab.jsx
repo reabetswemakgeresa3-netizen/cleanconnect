@@ -74,8 +74,8 @@ export default function SystemHealthTab() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ fontSize: 15, color: 'var(--text-muted)' }}>Connections</h3>
             <button onClick={runCheck} disabled={checking} style={{
-              padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--tile-2)',
-              color: 'var(--text)', fontSize: 12, cursor: checking ? 'default' : 'pointer'
+              padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--tile-2)',
+              color: 'var(--text)', fontSize: 12, cursor: checking ? 'default' : 'pointer', minHeight: 44
             }}>{checking ? 'Checking…' : 'Run Check'}</button>
           </div>
           {checkError && <p style={{ color: '#E11900', fontSize: 12.5, marginBottom: 10 }}>{checkError}</p>}

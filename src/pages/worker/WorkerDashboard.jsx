@@ -232,7 +232,7 @@ export default function WorkerDashboard() {
             { id: 'done', label: `History (${done.length})` }
           ].map(f => (
             <button key={f.id} onClick={() => f.id === 'jobs' ? openJobsTab() : setFilter(f.id)} style={{
-              padding: '8px 18px', borderRadius: 100, fontSize: 14, cursor: 'pointer',
+              padding: '10px 18px', borderRadius: 100, fontSize: 14, cursor: 'pointer', minHeight: 44,
               border: `1.5px solid ${filter === f.id ? '#00C896' : 'var(--border)'}`,
               background: filter === f.id ? 'rgba(0,200,150,0.1)' : 'transparent',
               color: filter === f.id ? '#00C896' : 'var(--text-muted)', transition: 'all 0.2s',

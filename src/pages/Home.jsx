@@ -17,26 +17,34 @@ const TILE_LABELS = {
   medical: 'Medical', carpet: 'Carpet', postConstruction: 'Post-Construction', event: 'Events'
 }
 
+// Unsplash-hosted photos, resized/compressed via URL params for mobile
+// (w=900, auto=format serves WebP/AVIF where supported, q=75). The
+// `gradient` on each slide is a same-toned fallback shown instantly while
+// the photo loads (or if it fails), so the slide never looks broken.
 const SLIDES = [
   {
-    gradient: 'linear-gradient(135deg, #00E5B0 0%, #00C896 45%, #016B52 100%)',
+    image: 'https://images.unsplash.com/photo-1749930206000-179d0b85aa7e?w=900&q=75&auto=format&fit=crop',
+    gradient: 'linear-gradient(135deg, #1a2422 0%, #0d1512 100%)',
     eyebrow: "SA's First On-Demand Cleaning App 🇿🇦",
     sub: 'Vetted cleaners at your door in hours',
     cta: 'Book your first clean'
   },
   {
+    image: 'https://images.unsplash.com/photo-1758273238415-01ec03d9ef27?w=900&q=75&auto=format&fit=crop',
     gradient: 'linear-gradient(150deg, #00C896 0%, #00795C 60%, #013C2E 100%)',
     eyebrow: 'Up to 60% Cheaper Than Market Rates 💚',
     sub: 'Home cleans from R5/m² — guaranteed lowest',
     cta: 'See prices'
   },
   {
-    gradient: 'linear-gradient(120deg, #0D9488 0%, #00C896 50%, #004D3D 100%)',
+    image: 'https://images.unsplash.com/photo-1529775768124-fb874e73ac7e?w=900&q=75&auto=format&fit=crop',
+    gradient: 'linear-gradient(120deg, #241c1c 0%, #0f0a0a 100%)',
     eyebrow: 'Track Your Cleaner Live 📍',
     sub: 'Watch them arrive in real time, Uber-style',
     cta: 'How it works'
   },
   {
+    image: 'https://images.unsplash.com/photo-1686178827149-6d55c72d81df?w=900&q=75&auto=format&fit=crop',
     gradient: 'linear-gradient(160deg, #00C896 0%, #0D7A63 55%, #052E24 100%)',
     eyebrow: 'Become a Cleaner, Earn Daily 💼',
     sub: 'Join CleanConnect Workers and get jobs near you',
@@ -114,6 +122,14 @@ export default function Home() {
     const t = setInterval(() => paginate(1), 4000)
     return () => clearInterval(t)
   }, [paused])
+
+  // Only the active slide's <img> is ever mounted (AnimatePresence swaps
+  // one for another), so without this the next photo would pop in blank on
+  // every swipe/auto-advance. Warms the browser's HTTP cache for all of
+  // them up front instead.
+  useEffect(() => {
+    SLIDES.forEach(s => { const img = new Image(); img.src = s.image })
+  }, [])
 
   // Only needed to compute the active-booking ETA below — no location UI on this screen
   useEffect(() => {
@@ -220,7 +236,17 @@ export default function Home() {
                   overflow: 'hidden', cursor: 'grab', touchAction: 'pan-y'
                 }}
               >
-                <Bubbles />
+                {/* Real photo background — the gradient above shows instantly and
+                    stays as a same-toned fallback if the photo is slow/fails. */}
+                <img
+                  src={SLIDES[slideIndex].image} alt="" loading="lazy" draggable={false}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                {/* Dark scrim so white text stays readable over any photo */}
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.32) 45%, rgba(0,0,0,0.62) 100%)'
+                }} />
                 <div style={{ position: 'relative', zIndex: 1 }}>
                   <div style={{ fontSize: 19, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.3, marginBottom: 8, letterSpacing: '-0.01em', maxWidth: 260 }}>
                     {SLIDES[slideIndex].eyebrow}
@@ -313,16 +339,6 @@ export default function Home() {
         </Link>
       </div>
     </div>
-  )
-}
-
-function Bubbles() {
-  return (
-    <>
-      <div style={{ position: 'absolute', top: -40, right: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.10)' }} />
-      <div style={{ position: 'absolute', bottom: -55, left: -40, width: 175, height: 175, borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
-      <div style={{ position: 'absolute', top: 22, right: 64, width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.18)' }} />
-    </>
   )
 }
 

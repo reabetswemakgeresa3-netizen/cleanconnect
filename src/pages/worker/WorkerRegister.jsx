@@ -197,7 +197,7 @@ function Field({ label, children }) {
 function Chip({ active, onClick, children }) {
   return (
     <button type="button" onClick={onClick} style={{
-      padding: '8px 14px', borderRadius: 100, fontSize: 13, cursor: 'pointer',
+      padding: '10px 14px', borderRadius: 100, fontSize: 13, cursor: 'pointer', minHeight: 44,
       border: `1.5px solid ${active ? '#00C896' : 'var(--border)'}`,
       background: active ? 'rgba(0,200,150,0.1)' : 'transparent',
       color: active ? '#00C896' : 'var(--text-muted)', transition: 'all 0.2s'

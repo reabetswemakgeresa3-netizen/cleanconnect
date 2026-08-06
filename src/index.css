@@ -48,6 +48,14 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
+/* Any element that overflows the viewport horizontally (a mis-sized grid
+   item, an un-truncated long string, etc.) would otherwise make the whole
+   page horizontally scrollable — which shows up on real phones as a
+   persistent native scroll-position indicator that reads as a stray "line"
+   during scroll. Clipping here turns that class of bug into invisible
+   overflow instead of a visible, scrollable artifact. */
+html, body { overflow-x: hidden; }
+
 body {
   font-family: 'Inter', -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
   background: var(--bg);
@@ -152,34 +160,61 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
 .hscroll::-webkit-scrollbar { display: none; }
 .hscroll > * { scroll-snap-align: start; flex-shrink: 0; }
 
-/* Bottom navigation — mobile only, like Uber */
+/* Bottom navigation — mobile only. Floating rounded "island" above the
+   bottom edge (Uber/Instagram-style), rather than a full-bleed bar. */
 .bottom-nav {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
+  left: calc(16px + var(--sal));
+  right: calc(16px + var(--sar));
+  bottom: calc(16px + var(--sab));
   z-index: 150;
   display: none;
+  align-items: center;
   background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding: 6px calc(8px + var(--sar)) calc(6px + var(--sab)) calc(8px + var(--sal));
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 10px 32px rgba(0,0,0,0.14), 0 2px 10px rgba(0,0,0,0.06);
+  padding: 8px 6px;
+}
+[data-theme="dark"] .bottom-nav {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.35);
 }
 .bottom-nav a {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
-  padding: 6px 0 4px;
-  font-size: 11px;
+  padding: 4px;
+  min-height: 44px;
+  border-radius: 16px;
+  font-size: 10.5px;
   font-weight: 600;
   color: var(--text-dim);
+  transition: color 0.2s ease;
 }
-.bottom-nav a.active { color: var(--text); }
-.bottom-nav a.active svg { stroke: var(--text); }
-.bottom-nav svg { stroke: var(--text-dim); }
+.bottom-nav-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: transparent;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+.bottom-nav a.active { color: #00C896; }
+.bottom-nav a.active .bottom-nav-icon-wrap {
+  background: rgba(0,200,150,0.14);
+  transform: scale(1.04);
+}
+.bottom-nav a.active svg { stroke: #00C896; }
+.bottom-nav svg { stroke: var(--text-dim); transition: stroke 0.2s ease; }
 
 @media (max-width: 768px) {
   .bottom-nav { display: flex; }
-  body { padding-bottom: calc(74px + var(--sab)); }
+  body { padding-bottom: calc(100px + var(--sab)); }
   .hide-mobile { display: none !important; }
 }
 
@@ -197,8 +232,8 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
 }
 @media (max-width: 768px) {
   .home-screen {
-    height: calc(100vh - var(--sat) - 74px - var(--sab));
-    height: calc(100dvh - var(--sat) - 74px - var(--sab));
+    height: calc(100vh - var(--sat) - 100px - var(--sab));
+    height: calc(100dvh - var(--sat) - 100px - var(--sab));
   }
 }
 /* Grayscale map tiles to match the clean Uber look; inverted for dark mode
@@ -223,7 +258,7 @@ input,select,textarea { font-family: 'Inter', sans-serif; outline: none; }
   .book-cta-bar {
     position: fixed;
     left: 0; right: 0;
-    bottom: calc(74px + var(--sab));
+    bottom: calc(100px + var(--sab));
     padding: 12px calc(16px + var(--sar)) 12px calc(16px + var(--sal));
     box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
     z-index: 140;

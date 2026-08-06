@@ -168,13 +168,13 @@ export function BookingRow({ booking, onSelect, onStatusChange, onAssignCleaner,
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <select value={booking.cleaner_assigned || ''} onChange={e => onAssignCleaner(e.target.value)} onClick={e => e.stopPropagation()}
-          style={{ background: booking.cleaner_assigned ? 'var(--tile-2)' : 'rgba(225,25,0,0.08)', border: `1px solid ${booking.cleaner_assigned ? 'var(--border)' : '#E11900'}`, borderRadius: 8, padding: '7px 10px', color: booking.cleaner_assigned ? 'var(--text)' : '#E11900', fontSize: 12, cursor: 'pointer' }}>
+          style={{ background: booking.cleaner_assigned ? 'var(--tile-2)' : 'rgba(225,25,0,0.08)', border: `1px solid ${booking.cleaner_assigned ? 'var(--border)' : '#E11900'}`, borderRadius: 8, padding: '11px 10px', minHeight: 44, color: booking.cleaner_assigned ? 'var(--text)' : '#E11900', fontSize: 12, cursor: 'pointer' }}>
           <option value="">Assign cleaner...</option>
           {cleaners.map(c => <option key={c.name} value={c.name}>{c.name}{c.available === false ? ' (unavailable)' : ''}</option>)}
         </select>
 
         <select value={booking.status} onChange={e => onStatusChange(e.target.value)} onClick={e => e.stopPropagation()}
-          style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 10px', color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
+          style={{ background: 'var(--tile-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '11px 10px', minHeight: 44, color: 'var(--text)', fontSize: 12, cursor: 'pointer' }}>
           <option value="pending">Pending</option>
           <option value="confirmed">Confirmed</option>
           <option value="in-progress">In Progress</option>

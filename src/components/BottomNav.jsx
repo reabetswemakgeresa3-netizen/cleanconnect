@@ -43,10 +43,12 @@ export default function BottomNav() {
     <nav className="bottom-nav">
       {TABS.map(t => (
         <Link key={t.to} to={t.to} className={isActive(t.to) ? 'active' : ''}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-            strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            {t.icon}
-          </svg>
+          <span className="bottom-nav-icon-wrap">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+              strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              {t.icon}
+            </svg>
+          </span>
           {t.label}
         </Link>
       ))}

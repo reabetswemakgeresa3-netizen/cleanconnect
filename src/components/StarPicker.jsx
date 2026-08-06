@@ -20,7 +20,9 @@ export default function StarPicker({ value, onChange, size = 32, readOnly = fals
           aria-label={`${n} star${n > 1 ? 's' : ''}`}
           style={{
             background: 'none', border: 'none', padding: 0,
-            cursor: readOnly ? 'default' : 'pointer', lineHeight: 0
+            cursor: readOnly ? 'default' : 'pointer', lineHeight: 0,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            minWidth: readOnly ? size : 44, minHeight: readOnly ? size : 44
           }}
         >
           <svg width={size} height={size} viewBox="0 0 24 24"

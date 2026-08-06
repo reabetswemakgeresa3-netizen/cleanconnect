@@ -47,14 +47,14 @@ export default function MessagesTab() {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {[
           { id: 'all', label: `All (${messages.length})` },
           { id: 'unread', label: `Unread (${messages.filter(m => !m.read).length})` },
           { id: 'read', label: 'Resolved' },
         ].map(f => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{
-            padding: '8px 16px', borderRadius: 100, fontSize: 13, cursor: 'pointer',
+            padding: '10px 16px', borderRadius: 100, fontSize: 13, cursor: 'pointer', minHeight: 44,
             border: `1.5px solid ${filter === f.id ? '#00C896' : 'var(--border)'}`,
             background: filter === f.id ? 'rgba(0,200,150,0.1)' : 'transparent',
             color: filter === f.id ? '#00C896' : 'var(--text-muted)'
@@ -77,7 +77,7 @@ export default function MessagesTab() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>{new Date(m.created_at).toLocaleString('en-ZA')}</span>
                     <button onClick={() => toggleRead(m)} style={{
-                      padding: '6px 14px', borderRadius: 100, fontSize: 12, cursor: 'pointer',
+                      padding: '10px 14px', borderRadius: 100, fontSize: 12, cursor: 'pointer', minHeight: 44,
                       border: `1px solid ${m.read ? 'var(--border)' : '#00C896'}`,
                       background: m.read ? 'var(--tile-2)' : 'rgba(0,200,150,0.1)',
                       color: m.read ? 'var(--text-muted)' : '#00C896', fontWeight: 600

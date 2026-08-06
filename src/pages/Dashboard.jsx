@@ -161,7 +161,7 @@ export default function Dashboard() {
           ].map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)}
               style={{
-                padding: '8px 18px', borderRadius: 100,
+                padding: '10px 18px', borderRadius: 100, minHeight: 44,
                 border: `1.5px solid ${filter === f.id ? '#00C896' : 'var(--border)'}`,
                 background: filter === f.id ? 'rgba(0,200,150,0.1)' : 'transparent',
                 color: filter === f.id ? '#00C896' : 'var(--text-muted)',

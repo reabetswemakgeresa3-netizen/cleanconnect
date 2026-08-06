@@ -620,9 +620,9 @@ function ServiceMapStep({ serviceId, sqm, onSelectService, onSqmChange, onContin
 }
 
 const stepBtn = {
-  width: 34, height: 34, borderRadius: '50%', background: 'var(--tile)',
+  width: 44, height: 44, borderRadius: '50%', background: 'var(--tile)',
   border: '1px solid var(--border)', color: 'var(--text)', fontSize: 18, fontWeight: 600,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
+  display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flexShrink: 0
 }
 
 function FormField({ label, children }) {

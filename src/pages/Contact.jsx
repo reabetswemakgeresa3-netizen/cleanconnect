@@ -61,9 +61,9 @@ export default function Contact() {
           </a>
           <a href={`mailto:${SUPPORT_EMAIL}`} style={contactCard}>
             <Icon name="mail" size={26} color="var(--text-muted)" />
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text)' }}>Email Us</div>
-              <div style={{ fontSize: 12, color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{SUPPORT_EMAIL}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{SUPPORT_EMAIL}</div>
             </div>
           </a>
         </div>
@@ -122,6 +122,6 @@ export default function Contact() {
 }
 
 const contactCard = {
-  display: 'flex', alignItems: 'center', gap: 12, padding: '16px 14px',
+  display: 'flex', alignItems: 'center', gap: 12, padding: '16px 14px', minWidth: 0,
   borderRadius: 14, background: 'var(--tile)', border: '1px solid var(--border)'
 }

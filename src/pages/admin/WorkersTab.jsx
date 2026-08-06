@@ -122,7 +122,7 @@ function actionBtn(active) {
     background: active ? 'rgba(0,200,150,0.1)' : 'var(--tile-2)',
     border: `1px solid ${active ? 'rgba(0,200,150,0.3)' : 'var(--border)'}`,
     color: active ? '#00C896' : 'var(--text-muted)',
-    padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap'
+    padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap', minHeight: 44
   }
 }
 

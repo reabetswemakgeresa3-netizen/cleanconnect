@@ -161,7 +161,7 @@ export default function Cleaners() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
             {specialties.map(s => (
               <button key={s} onClick={() => setFilter(s)} style={{
-                padding: '8px 16px', borderRadius: 100,
+                padding: '10px 16px', borderRadius: 100, minHeight: 44,
                 border: `1.5px solid ${filter === s ? '#00C896' : 'var(--border)'}`,
                 background: filter === s ? 'rgba(0,200,150,0.1)' : 'transparent',
                 color: filter === s ? '#00C896' : 'var(--text-muted)',
@@ -172,7 +172,7 @@ export default function Cleaners() {
             ))}
           </div>
           <button onClick={() => setAvailableOnly(v => !v)} style={{
-            padding: '8px 18px', borderRadius: 100,
+            padding: '10px 18px', borderRadius: 100, minHeight: 44,
             border: `1.5px solid ${availableOnly ? '#00C896' : 'var(--border)'}`,
             background: availableOnly ? 'rgba(0,200,150,0.1)' : 'transparent',
             color: availableOnly ? '#00C896' : 'var(--text-muted)',
