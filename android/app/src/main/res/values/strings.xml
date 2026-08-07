@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CleanConnect</string>
+    <string name="title_activity_main">CleanConnect</string>
+    <string name="package_name">app.cleanconnect</string>
+    <string name="custom_url_scheme">app.cleanconnect</string>
+</resources>
